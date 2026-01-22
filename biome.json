@@ -1,0 +1,68 @@
+{
+    "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+    "assist": {
+        "actions": {
+            "source": {
+                "organizeImports": "off",
+                "useSortedAttributes": "on",
+                "useSortedKeys": "off",
+                "useSortedProperties": "on"
+            }
+        },
+        "enabled": true
+    },
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 2,
+        "lineEnding": "lf",
+        "lineWidth": 80
+    },
+    "javascript": {
+        "formatter": {
+            "arrowParentheses": "asNeeded",
+            "bracketSpacing": true,
+            "indentStyle": "space",
+            "jsxQuoteStyle": "double",
+            "quoteStyle": "single",
+            "semicolons": "asNeeded",
+            "trailingCommas": "es5"
+        }
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "a11y": {
+                "noSvgWithoutTitle": "off",
+                "useButtonType": "off"
+            },
+            "complexity": {
+                "noBannedTypes": "warn"
+            },
+            "correctness": {
+                "noUnusedImports": "warn",
+                "useExhaustiveDependencies": "off"
+            },
+            "recommended": true,
+            "style": {
+                "noUselessElse": "warn"
+            },
+            "suspicious": {
+                "noArrayIndexKey": "info",
+                "noDuplicateObjectKeys": "warn",
+                "noDuplicateProperties": "warn",
+                "noEmptyInterface": "off",
+                "noExplicitAny": "off",
+                "noUnknownAtRules": "off"
+            }
+        }
+    },
+    "css": {
+        "parser": {
+            "tailwindDirectives": true
+        }
+    },
+    "files": {
+        "includes": [".", "src/**/*", "!src/lib/electron-app/extensions/**/*", "!node_modules/**/*", "!dist/**/*"]
+    }
+}

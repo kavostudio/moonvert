@@ -1,0 +1,1 @@
+["esbuild", "electron", "electron-vite", "@biomejs/biome", "@tailwindcss/oxide", "electron-winstaller"]
