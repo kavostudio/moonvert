@@ -55,7 +55,9 @@ export function InformationDialog({ className }: InformationDialogProps) {
                             <DialogTitle className="text-popover">
                                 <Logo className="fill-popover-foreground" />
                             </DialogTitle>
-                            <DialogDescription className="text-muted-softer text-base leading-none">Version: {config.version.codename} 1.0</DialogDescription>
+                            <DialogDescription className="text-muted-softer text-base leading-none">
+                                Version: v{config.version.number} {config.version.codename}
+                            </DialogDescription>
                         </div>
                     </div>
                     <div className="flex flex-1 flex-col items-start justify-between">
