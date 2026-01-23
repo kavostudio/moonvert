@@ -2,7 +2,7 @@
     "displayName": "Moonvert",
     "name": "moonvert",
     "description": "A desktop application for converting files between various formats.",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "versionCodename": "Callisto",
     "main": "./node_modules/.dev/main/index.mjs",
     "resources": "src/resources",
