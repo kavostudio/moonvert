@@ -26,3 +26,17 @@ export function makeAppId(id: string = appId): string {
 export function waitFor(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+import { z } from 'zod/v4';
+
+export function makeEnv<EnvSchema extends z.core.$ZodLooseShape>({
+    schema,
+    values,
+}: {
+    schema: EnvSchema;
+    values: Record<keyof EnvSchema, any>;
+}): z.output<z.ZodObject<EnvSchema>> {
+    const zod = z.object(schema);
+    const res = zod.parse(values);
+    return res;
+}
