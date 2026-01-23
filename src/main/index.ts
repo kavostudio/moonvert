@@ -18,6 +18,7 @@ import { cleanupTempFiles } from './utils/cleanup';
 import { getDebugLogPath, isDebugEnabled, logDebug } from './utils/debug-logger';
 import { IPCEvents } from 'shared/ipc/ipc-config';
 import { processOpenWithFiles } from './ipc/utils';
+import { MainEnv } from './main-env';
 
 import windowStateKeeper from 'electron-window-state';
 
@@ -130,7 +131,16 @@ makeAppWithSingleInstanceLock(async () => {
         });
     }
 
-    if (app.isPackaged && process.platform === 'darwin') {
+    if (app.isPackaged && process.platform === 'darwin' && MainEnv.MOONVERT_UPDATE_URL && MainEnv.MOONVERT_UPDATE_SECRET && MainEnv.MOONVERT_AUTH_HEADER) {
+        const updateUrl = MainEnv.MOONVERT_UPDATE_URL;
+        const updateSecret = MainEnv.MOONVERT_UPDATE_SECRET;
+
+        autoUpdater.setFeedURL({
+            provider: 'generic',
+            url: updateUrl,
+        });
+        autoUpdater.requestHeaders = { [MainEnv.MOONVERT_AUTH_HEADER]: updateSecret };
+
         autoUpdater.autoDownload = true;
         autoUpdater.autoInstallOnAppQuit = true;
 
