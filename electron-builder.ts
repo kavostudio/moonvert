@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noTemplateCurlyInString: <> */
 import type { Configuration } from 'electron-builder';
 
-import { author as _author, displayName, main, name, resources, version, git } from './package.json';
+import { author as _author, displayName, main, name, resources, version } from './package.json';
 
 import { getDevFolder } from './src/lib/electron-app/release/utils/path';
 import { DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from './src/shared/config/converter-config';
@@ -13,16 +13,25 @@ const appId = `dev.${authorSlug}.${name}`.toLowerCase();
 
 const buildType: 'light' | 'standard' = process.env.BUILD_TYPE === 'standard' ? 'standard' : 'light';
 
-console.log(`Building ${buildType} build`);
+const s3Bucket = process.env.S3_BUCKET;
+const s3Endpoint = process.env.S3_ENDPOINT;
 
-console.log(process.env);
+console.log(`Building ${buildType} build`);
 
 export default {
     appId,
     productName: displayName,
     copyright: `Copyright © ${currentYear} — ${_author.name}`,
 
-    publish: [{ provider: 'github', owner: git.owner, repo: git.repository }],
+    publish: [
+        {
+            provider: 's3',
+            bucket: s3Bucket!,
+            region: 'auto',
+            endpoint: s3Endpoint,
+            acl: 'private',
+        },
+    ],
 
     directories: {
         app: getDevFolder(main),
@@ -30,7 +39,7 @@ export default {
     },
 
     dmg: {
-        sign: true,
+        sign: false,
         icon: `${resources}/build/icons/icon.icns`,
         iconSize: 80,
         contents: [
@@ -60,7 +69,8 @@ export default {
         gatekeeperAssess: false,
         entitlements: `${resources}/build/entitlements.mac.plist`,
         entitlementsInherit: `${resources}/build/entitlements.mac.inherit.plist`,
-        notarize: true,
+        notarize: false,
+        identity: null,
         fileAssociations: [
             {
                 ext: [...IMAGE_FORMATS],
@@ -95,26 +105,23 @@ export default {
         ],
         target:
             buildType === 'light'
-                ? [
-                      { target: 'dmg', arch: ['arm64'] },
-                      { target: 'zip', arch: ['arm64'] },
-                  ]
+                ? [{ target: 'zip', arch: ['arm64'] }]
                 : [
                       { target: 'dmg', arch: ['arm64'] },
                       { target: 'zip', arch: ['arm64'] },
                       { target: 'dir', arch: ['arm64'] },
                   ],
-        compression: 'maximum',
+        compression: 'store',
         asarUnpack: ['**/*.node'],
         asar: true,
         extraResources:
             buildType === 'light'
                 ? [
-                      {
-                          from: 'dist/ffmpeg/darwin-${arch}',
-                          to: 'ffmpeg',
-                          filter: ['**/*'],
-                      },
+                      //   {
+                      //       from: 'dist/ffmpeg/darwin-${arch}',
+                      //       to: 'ffmpeg',
+                      //       filter: ['**/*'],
+                      //   },
                   ]
                 : [
                       {
