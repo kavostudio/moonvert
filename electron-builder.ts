@@ -29,6 +29,29 @@ export default {
         output: `dist/v${version}`,
     },
 
+    dmg: {
+        sign: true,
+        icon: `${resources}/build/icons/icon.icns`,
+        iconSize: 80,
+        contents: [
+            {
+                x: 130,
+                y: 220,
+                type: 'file',
+            },
+            {
+                x: 410,
+                y: 220,
+                type: 'link',
+                path: '/Applications',
+            },
+        ],
+        window: {
+            width: 540,
+            height: 380,
+        },
+    },
+
     mac: {
         artifactName: `${name}-v\${version}-\${os}-\${arch}.\${ext}`,
         icon: `${resources}/build/icons/icon.icns`,
@@ -80,10 +103,6 @@ export default {
                       { target: 'dmg', arch: ['arm64'] },
                       { target: 'zip', arch: ['arm64'] },
                       { target: 'dir', arch: ['arm64'] },
-                      {
-                          target: 'pkg',
-                          arch: ['arm64'],
-                      },
                   ],
         compression: 'maximum',
         asarUnpack: ['**/*.node'],
