@@ -1,5 +1,8 @@
 import { app, BrowserWindow, dialog } from 'electron';
+import { access, readFile, rm, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import electronUpdater from 'electron-updater';
+import z from 'zod';
 
 const { autoUpdater } = electronUpdater;
 
@@ -25,6 +28,40 @@ import windowStateKeeper from 'electron-window-state';
 let mainWindow: BrowserWindow | null = null;
 let pendingOpenWithPaths: string[] = [];
 let handlersRegistered = false;
+let shouldInstallOnNextLaunch = false;
+
+const UPDATE_DEFERRED_FILE = 'update-install-on-next-launch.json';
+const UpdateDeferredSchema = z.object({
+    installOnNextLaunch: z.boolean().optional(),
+});
+
+function getUpdateDeferredPath() {
+    return resolve(app.getPath('userData'), UPDATE_DEFERRED_FILE);
+}
+
+async function loadUpdateDeferredFlag() {
+    try {
+        await access(getUpdateDeferredPath());
+        const raw = await readFile(getUpdateDeferredPath(), 'utf8');
+        const parsed = UpdateDeferredSchema.safeParse(JSON.parse(raw));
+        shouldInstallOnNextLaunch = Boolean(parsed.success ? parsed.data.installOnNextLaunch : false);
+    } catch {
+        shouldInstallOnNextLaunch = false;
+    }
+}
+
+async function setUpdateDeferredFlag(value: boolean) {
+    try {
+        if (!value) {
+            await rm(getUpdateDeferredPath(), { force: true });
+            return;
+        }
+
+        await writeFile(getUpdateDeferredPath(), JSON.stringify({ installOnNextLaunch: true }, null, 2));
+    } catch {
+        // no-op
+    }
+}
 
 function focusWindow(window: BrowserWindow) {
     if (window.isMinimized()) {
@@ -135,6 +172,8 @@ makeAppWithSingleInstanceLock(async () => {
         const updateUrl = MainEnv.MOONVERT_UPDATE_URL;
         const updateSecret = MainEnv.MOONVERT_UPDATE_SECRET;
 
+        await loadUpdateDeferredFlag();
+
         autoUpdater.setFeedURL({
             provider: 'generic',
             url: updateUrl,
@@ -142,7 +181,7 @@ makeAppWithSingleInstanceLock(async () => {
         autoUpdater.requestHeaders = { [MainEnv.MOONVERT_AUTH_HEADER]: updateSecret };
 
         autoUpdater.autoDownload = true;
-        autoUpdater.autoInstallOnAppQuit = true;
+        autoUpdater.autoInstallOnAppQuit = false;
 
         autoUpdater.on('checking-for-update', () => {
             void logDebug('AutoUpdater: checking for updates');
@@ -169,8 +208,37 @@ makeAppWithSingleInstanceLock(async () => {
             });
         });
 
-        autoUpdater.on('update-downloaded', (info) => {
+        autoUpdater.on('update-downloaded', async (info) => {
             void logDebug('AutoUpdater: update downloaded', { version: info.version });
+
+            if (shouldInstallOnNextLaunch) {
+                await setUpdateDeferredFlag(false);
+                autoUpdater.quitAndInstall();
+                return;
+            }
+
+            const dialogWindow = mainWindow ?? BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+            if (!dialogWindow) {
+                autoUpdater.quitAndInstall();
+                return;
+            }
+
+            const { response } = await dialog.showMessageBox(dialogWindow, {
+                type: 'info',
+                buttons: ['Install and Restart', 'Later'],
+                defaultId: 0,
+                cancelId: 1,
+                title: 'Update Ready',
+                message: `Moonvert ${info.version} is ready to install.`,
+                detail: 'Restart the app to apply the update.',
+            });
+
+            if (response === 0) {
+                autoUpdater.quitAndInstall();
+            } else {
+                await setUpdateDeferredFlag(true);
+                shouldInstallOnNextLaunch = true;
+            }
         });
 
         void autoUpdater.checkForUpdates();

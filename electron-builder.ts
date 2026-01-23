@@ -39,7 +39,7 @@ export default {
     },
 
     dmg: {
-        sign: false,
+        sign: true,
         icon: `${resources}/build/icons/icon.icns`,
         iconSize: 80,
         contents: [
@@ -69,8 +69,7 @@ export default {
         gatekeeperAssess: false,
         entitlements: `${resources}/build/entitlements.mac.plist`,
         entitlementsInherit: `${resources}/build/entitlements.mac.inherit.plist`,
-        notarize: false,
-        identity: null,
+        notarize: true,
         fileAssociations: [
             {
                 ext: [...IMAGE_FORMATS],
