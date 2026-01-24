@@ -1,19 +1,34 @@
 #!/bin/bash
-# Build PyInstaller executable for macOS
-
 set -e
 
-echo "🏗️  Building PyInstaller executable for macOS..."
+echo "Building PyInstaller executable for macOS..."
 
-if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Activating python virtual environment..."
-    source .venv/bin/activate
+if ! command -v python3 &> /dev/null; then
+    echo "Python 3 is not installed. Please install Python 3.8 or higher."
+    exit 1
 fi
 
-if ! pip show pyinstaller &> /dev/null; then
-    echo "Installing PyInstaller..."
-    pip install pyinstaller
+echo "Python found: $(python3 --version)"
+
+if [ -d ".venv" ]; then
+    echo "Removing existing virtual environment..."
+    rm -rf .venv
 fi
+
+echo "Creating virtual environment..."
+python3 -m venv .venv
+
+echo "Activating virtual environment..."
+source .venv/bin/activate
+
+echo "Upgrading pip..."
+pip install --upgrade pip --quiet
+
+echo "Installing dependencies..."
+pip install -r src/python/requirements.txt --quiet
+
+echo "Installing PyInstaller..."
+pip install pyinstaller --quiet
 
 echo "Cleaning previous builds..."
 rm -rf build dist/python/
@@ -28,10 +43,7 @@ cp dist/convert_geo dist/python/darwin/convert_geo
 chmod +x dist/python/darwin/convert_geo
 
 echo ""
-echo "✅ Build complete!"
+echo "Build complete!"
 echo "Executable: dist/python/darwin/convert_geo"
 echo "Size: $(du -h dist/python/darwin/convert_geo | cut -f1)"
-echo ""
-echo "To test:"
-echo "   ./dist/python/darwin/convert_geo <input> <output> <source_format> <target_format>"
 echo ""
