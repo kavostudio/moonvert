@@ -38,10 +38,16 @@ export default {
         output: `dist/v${version}`,
     },
 
+    compression: 'maximum',
+    concurrency: {
+        jobs: 3,
+    },
+
     dmg: {
         sign: true,
         icon: `${resources}/build/icons/icon.icns`,
         iconSize: 80,
+        format: 'UDBZ',
         contents: [
             {
                 x: 130,
