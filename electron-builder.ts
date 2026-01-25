@@ -110,7 +110,7 @@ export default {
                       { target: 'zip', arch: ['arm64'] },
                       { target: 'dir', arch: ['arm64'] },
                   ],
-        compression: 'store',
+        compression: 'maximum',
         asarUnpack: ['**/*.node'],
         asar: true,
         extraResources:
