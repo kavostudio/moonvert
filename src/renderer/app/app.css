@@ -22,6 +22,9 @@
     --muted-foreground: hsla(280, 34%, 50%, 1);
     --muted-foreground-softer: hsla(280, 100%, 92%, 1);
 
+    --accent: hsla(0, 0%, 95%, 1);
+
+
     --accent-foreground: oklch(0.205 0 0);
     --accent-secondary-foreground: hsla(0, 0%, 40%, 1);
 
@@ -53,6 +56,8 @@
 
     --muted-foreground: hsla(240, 20%, 85%, 1);
     --muted-foreground-softer: hsla(240, 19%, 65%, 1);
+
+    --accent: hsla(0, 0%, 10%, 1);
 
     --accent-foreground: oklch(0.205 0 0);
     --accent-secondary-foreground: hsla(0, 0%, 40%, 1);
