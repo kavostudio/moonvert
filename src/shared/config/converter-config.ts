@@ -1,9 +1,11 @@
 import {
+    AudioFileFormatZod,
     DocumentFileFormatZod,
     EbookFileFormatZod,
     GeoFileFormatZod,
     ImageFileFormatZod,
     VideoFileFormatZod,
+    type AudioFileFormat,
     type DocumentFileFormat,
     type EbookFileFormat,
     type FileFormat,
@@ -73,12 +75,28 @@ export const VideoConversionOptions = {
     vob: ['mp4', 'mov', 'webm', 'mkv', 'avi', 'gif', 'm4v', '3gp', 'flv', 'ts', 'mts', 'm2ts', 'wmv', 'ogv', 'mpg', 'mpeg', 'mxf'],
 } as const satisfies Partial<Record<VideoFileFormat, VideoFileFormat[]>>;
 
+export const AudioConversionOptions = {
+    mp3: ['wav', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'aiff', 'opus'],
+    wav: ['mp3', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'aiff', 'opus'],
+    flac: ['mp3', 'wav', 'aac', 'm4a', 'ogg', 'wma', 'aiff', 'opus'],
+    aac: ['mp3', 'wav', 'flac', 'm4a', 'ogg', 'wma', 'aiff', 'opus'],
+    m4a: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'aiff', 'opus'],
+    ogg: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'wma', 'aiff', 'opus'],
+    wma: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'aiff', 'opus'],
+    aiff: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'opus'],
+    alac: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'aiff', 'opus'],
+    opus: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'aiff'],
+    ape: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'aiff', 'opus'],
+    wv: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'aiff', 'opus'],
+} as const satisfies Partial<Record<AudioFileFormat, AudioFileFormat[]>>;
+
 export const AllowedConversionOptions = {
     ...GeoConversionOptions,
     ...ImageConversionOptions,
     ...DocumentConversionOptions,
     ...EbookConversionOptions,
     ...VideoConversionOptions,
+    ...AudioConversionOptions,
 };
 
 export const IMAGE_FORMATS = Object.keys(ImageConversionOptions) as ImageFileFormat[];
@@ -90,6 +108,8 @@ export const DOCUMENT_FORMATS = Object.keys(DocumentConversionOptions) as Docume
 export const EBOOK_FORMATS = Object.keys(EbookConversionOptions) as EbookFileFormat[];
 
 export const VIDEO_FORMATS = Object.keys(VideoConversionOptions) as VideoFileFormat[];
+
+export const AUDIO_FORMATS = Object.keys(AudioConversionOptions) as AudioFileFormat[];
 
 export function isConvertableImageFormat(format: FileFormat): format is ImageFileFormat {
     return IMAGE_FORMATS.includes(format as ImageFileFormat);
@@ -129,6 +149,14 @@ export function isConvertableVideoFormat(format: FileFormat): format is VideoFil
 
 export function isVideoTargetFormat(format: FileFormat): format is VideoFileFormat {
     return VideoFileFormatZod.safeParse(format).success;
+}
+
+export function isConvertableAudioFormat(format: FileFormat): format is AudioFileFormat {
+    return AUDIO_FORMATS.includes(format as AudioFileFormat);
+}
+
+export function isAudioTargetFormat(format: FileFormat): format is AudioFileFormat {
+    return AudioFileFormatZod.safeParse(format).success;
 }
 
 export type ConvertableFileFormat = keyof typeof AllowedConversionOptions;

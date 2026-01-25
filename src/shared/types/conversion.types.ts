@@ -20,7 +20,11 @@ export const GeoFileFormatZod = z.enum(['geojson', 'gpkg', 'shp', 'kml', 'kmz', 
 
 export type GeoFileFormat = z.infer<typeof GeoFileFormatZod>;
 
-export type FileFormat = GeoFileFormat | ImageFileFormat | DocumentFileFormat | EbookFileFormat | VideoFileFormat;
+export const AudioFileFormatZod = z.enum(['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'wma', 'aiff', 'alac', 'opus', 'ape', 'wv']);
+
+export type AudioFileFormat = z.infer<typeof AudioFileFormatZod>;
+
+export type FileFormat = GeoFileFormat | ImageFileFormat | DocumentFileFormat | EbookFileFormat | VideoFileFormat | AudioFileFormat;
 
 export type FileInfo = {
     id: string;
@@ -70,7 +74,20 @@ export type DocumentConversionRequest = GenericConversionRequest<
 
 export type VideoConversionRequest = GenericConversionRequest<{}, VideoFileFormat>;
 
-export type ConversionRequest = ImageConversionRequest | GeoConversionRequest | DocumentConversionRequest | VideoConversionRequest;
+export type AudioConversionOptions = {
+    bitrate?: number; // e.g., 128, 192, 256, 320 (kbps)
+    sampleRate?: number; // e.g., 44100, 48000
+    channels?: number; // 1 for mono, 2 for stereo
+};
+
+export type AudioConversionRequest = GenericConversionRequest<
+    {
+        audioOptions?: Partial<AudioConversionOptions>;
+    },
+    AudioFileFormat
+>;
+
+export type ConversionRequest = ImageConversionRequest | GeoConversionRequest | DocumentConversionRequest | VideoConversionRequest | AudioConversionRequest;
 
 type BaseConversionProgress = {
     fileId: string;

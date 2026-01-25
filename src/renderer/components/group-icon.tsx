@@ -1,7 +1,7 @@
-import type { FileGroup } from 'renderer/routes/main/configuration/helpers';
-import { Image, FileText, Map, LucideIcon, Book, Video } from 'lucide-react';
 import { useUnit } from 'effector-react';
+import { AudioLines, Book, FileText, Image, type LucideIcon, Map as MapIcon, Video } from 'lucide-react';
 import { $$theme } from 'renderer/entities/theme/model';
+import type { FileGroup } from 'renderer/routes/main/configuration/helpers';
 
 type GroupIconProps = {
     group: FileGroup;
@@ -10,9 +10,10 @@ type GroupIconProps = {
 const icons = {
     images: Image,
     documents: FileText,
-    geospatial: Map,
+    geospatial: MapIcon,
     books: Book,
     videos: Video,
+    audio: AudioLines,
 } satisfies Record<FileGroup, LucideIcon>;
 
 export function GroupIcon({ group }: GroupIconProps) {

@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from 'renderer/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'renderer/components/ui/command';

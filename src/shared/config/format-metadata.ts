@@ -1,6 +1,6 @@
 import type { FileFormat } from '../types/conversion.types';
 
-type FormatCategory = 'Raster Image' | 'Vector Geospatial' | 'Document' | 'Ebook' | 'Video';
+type FormatCategory = 'Raster Image' | 'Vector Geospatial' | 'Document' | 'Ebook' | 'Video' | 'Audio';
 
 const formatCategories: Record<string, FormatCategory> = {
     RasterImage: 'Raster Image',
@@ -8,6 +8,7 @@ const formatCategories: Record<string, FormatCategory> = {
     Document: 'Document',
     Ebook: 'Ebook',
     Video: 'Video',
+    Audio: 'Audio',
 };
 
 export type FormatMetadata = {
@@ -307,6 +308,80 @@ export const FORMAT_METADATA: Record<FileFormat, FormatMetadata> = {
         extension: '.vob',
         description: 'DVD Video Object container format',
         category: formatCategories.Video,
+    },
+
+    // Audio formats
+    mp3: {
+        name: 'MP3',
+        extension: '.mp3',
+        description: 'MPEG Audio Layer III - Universal lossy audio format',
+        category: formatCategories.Audio,
+    },
+    wav: {
+        name: 'WAV',
+        extension: '.wav',
+        description: 'Waveform Audio - Uncompressed PCM audio',
+        category: formatCategories.Audio,
+    },
+    flac: {
+        name: 'FLAC',
+        extension: '.flac',
+        description: 'Free Lossless Audio Codec - Lossless compression',
+        category: formatCategories.Audio,
+    },
+    aac: {
+        name: 'AAC',
+        extension: '.aac',
+        description: 'Advanced Audio Coding - High efficiency lossy format',
+        category: formatCategories.Audio,
+    },
+    m4a: {
+        name: 'M4A',
+        extension: '.m4a',
+        description: 'MPEG-4 Audio - Apple audio container format',
+        category: formatCategories.Audio,
+    },
+    ogg: {
+        name: 'OGG',
+        extension: '.ogg',
+        description: 'Ogg Vorbis - Open source lossy audio format',
+        category: formatCategories.Audio,
+    },
+    wma: {
+        name: 'WMA',
+        extension: '.wma',
+        description: 'Windows Media Audio - Microsoft audio format',
+        category: formatCategories.Audio,
+    },
+    aiff: {
+        name: 'AIFF',
+        extension: '.aiff',
+        description: 'Audio Interchange File Format - Uncompressed Apple audio',
+        category: formatCategories.Audio,
+    },
+    alac: {
+        name: 'ALAC',
+        extension: '.alac',
+        description: 'Apple Lossless Audio Codec - Lossless Apple format',
+        category: formatCategories.Audio,
+    },
+    opus: {
+        name: 'Opus',
+        extension: '.opus',
+        description: 'Opus Audio - Modern efficient lossy codec',
+        category: formatCategories.Audio,
+    },
+    ape: {
+        name: 'APE',
+        extension: '.ape',
+        description: "Monkey's Audio - Lossless audio compression",
+        category: formatCategories.Audio,
+    },
+    wv: {
+        name: 'WavPack',
+        extension: '.wv',
+        description: 'WavPack - Hybrid lossless audio compression',
+        category: formatCategories.Audio,
     },
 };
 

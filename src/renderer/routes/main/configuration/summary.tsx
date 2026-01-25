@@ -31,7 +31,7 @@ export function SummaryScreenContent() {
                                 <div className="border-border-accent flex h-7 w-32 items-center gap-2.5 overflow-hidden rounded-[6px] border bg-transparent px-3 py-1.5">
                                     {visibleFormats.map((f, index, array) => {
                                         return (
-                                            <span className="text-popover-foreground overflow-hidden text-base text-ellipsis whitespace-nowrap">
+                                            <span className="text-popover-foreground overflow-hidden text-base text-ellipsis whitespace-nowrap" key={index}>
                                                 .{f}
                                                 {index !== array.length - 1 ? ', ' : ''}
                                             </span>

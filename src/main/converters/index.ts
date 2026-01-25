@@ -1,5 +1,7 @@
 import {
     AllowedConversionOptions,
+    isAudioTargetFormat,
+    isConvertableAudioFormat,
     isConvertableDocumentFormat,
     isConvertableEbookFormat,
     isConvertableGeoFormat,
@@ -9,8 +11,17 @@ import {
     isEbookTargetFormat,
     isVideoTargetFormat,
 } from 'shared/config/converter-config';
-import type { ConversionRequest, DocumentConversionRequest, FileFormat, GeoConversionRequest, ImageConversionRequest, VideoConversionRequest } from 'shared/types/conversion.types';
+import type {
+    AudioConversionRequest,
+    ConversionRequest,
+    DocumentConversionRequest,
+    FileFormat,
+    GeoConversionRequest,
+    ImageConversionRequest,
+    VideoConversionRequest,
+} from 'shared/types/conversion.types';
 import type { ConverterFunction } from './base/base-converter';
+import { $$audioConverter } from './audio/audio-converter';
 import { $$documentConverter } from './document/document-converter';
 import { $$geoConverter } from './geo/geo-converter';
 import { $$imageConverter } from './image/image-converter';
@@ -45,6 +56,13 @@ export function getConverter(sourceFormat: FileFormat, targetFormat: FileFormat)
     if (isConvertableVideoFormat(sourceFormat) && isVideoTargetFormat(targetFormat)) {
         return async (request, onProgress, abortSignal) => {
             const result = await $$videoConverter.convert(request as VideoConversionRequest, onProgress, abortSignal);
+            return result;
+        };
+    }
+
+    if (isConvertableAudioFormat(sourceFormat) && isAudioTargetFormat(targetFormat)) {
+        return async (request, onProgress, abortSignal) => {
+            const result = await $$audioConverter.convert(request as AudioConversionRequest, onProgress, abortSignal);
             return result;
         };
     }

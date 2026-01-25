@@ -1,5 +1,5 @@
 import type { DocumentFileFormat, FileFormat } from 'shared/types/conversion.types';
-import { DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from 'shared/config/converter-config';
+import { AUDIO_FORMATS, DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from 'shared/config/converter-config';
 import type { FileWithMetadata } from './model';
 
 export type FileInput = {
@@ -31,6 +31,10 @@ function detectFormatAndCheckAcceptance(fileName: string): FileFormat | null {
     }
 
     if (VIDEO_FORMATS.includes(ext as (typeof VIDEO_FORMATS)[number])) {
+        return ext as FileFormat;
+    }
+
+    if (AUDIO_FORMATS.includes(ext as (typeof AUDIO_FORMATS)[number])) {
         return ext as FileFormat;
     }
 

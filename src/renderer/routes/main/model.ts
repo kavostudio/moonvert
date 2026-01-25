@@ -5,6 +5,8 @@ import {
     GEO_FORMATS,
     IMAGE_FORMATS,
     VIDEO_FORMATS,
+    isAudioTargetFormat,
+    isConvertableAudioFormat,
     isConvertableDocumentFormat,
     isConvertableEbookFormat,
     isConvertableGeoFormat,
@@ -17,6 +19,8 @@ import {
     isVideoTargetFormat,
 } from 'shared/config/converter-config';
 import type {
+    AudioConversionRequest,
+    AudioFileFormat,
     ConversionProgress,
     ConversionRequest,
     ConversionResult,
@@ -53,6 +57,10 @@ type Formats =
     | {
           format: VideoFileFormat;
           targetFormat?: VideoFileFormat;
+      }
+    | {
+          format: AudioFileFormat;
+          targetFormat?: AudioFileFormat;
       };
 
 export type FileWithMetadata = {
@@ -204,7 +212,11 @@ const startConversionFx = createEffect(async () => {
                 sourcePath: file.path!,
             };
 
-            if (file.state !== 'idle' && isConvertableImageFormat(file.format) && isImageTargetFormat(file.targetFormat!)) {
+            if (file.state === 'idle') {
+                return null;
+            }
+
+            if (isConvertableImageFormat(file.format) && isImageTargetFormat(file.targetFormat!)) {
                 return {
                     ...baseRequest,
                     sourceFormat: file.format,
@@ -212,7 +224,7 @@ const startConversionFx = createEffect(async () => {
                 } as ImageConversionRequest;
             }
 
-            if (file.state !== 'idle' && isConvertableGeoFormat(file.format) && isGeoTargetFormat(file.targetFormat!)) {
+            if (isConvertableGeoFormat(file.format) && isGeoTargetFormat(file.targetFormat!)) {
                 return {
                     ...baseRequest,
                     sourceFormat: file.format,
@@ -220,7 +232,7 @@ const startConversionFx = createEffect(async () => {
                 } as GeoConversionRequest;
             }
 
-            if (file.state !== 'idle' && isConvertableVideoFormat(file.format) && isVideoTargetFormat(file.targetFormat!)) {
+            if (isConvertableVideoFormat(file.format) && isVideoTargetFormat(file.targetFormat!)) {
                 return {
                     ...baseRequest,
                     sourceFormat: file.format,
@@ -228,8 +240,18 @@ const startConversionFx = createEffect(async () => {
                 } as VideoConversionRequest;
             }
 
-            // Documents and Ebooks
-            if (file.state !== 'idle') {
+            if (isConvertableAudioFormat(file.format) && isAudioTargetFormat(file.targetFormat!)) {
+                return {
+                    ...baseRequest,
+                    sourceFormat: file.format,
+                    targetFormat: file.targetFormat,
+                } as AudioConversionRequest;
+            }
+
+            if (
+                (isConvertableDocumentFormat(file.format) || isConvertableEbookFormat(file.format)) &&
+                (isDocumentTargetFormat(file.targetFormat!) || isEbookTargetFormat(file.targetFormat!))
+            ) {
                 return {
                     ...baseRequest,
                     sourceFormat: file.format as DocumentFileFormat | EbookFileFormat,
@@ -341,6 +363,16 @@ sample({
                         ...file,
                         format: file.format as VideoFileFormat,
                         targetFormat: targetFormat as VideoFileFormat,
+                        state: 'ready',
+                        convertible: canConvertFileToFormat(file, targetFormat),
+                    } satisfies FileWithMetadata;
+                }
+
+                if (isConvertableAudioFormat(file.format) && isAudioTargetFormat(targetFormat)) {
+                    return {
+                        ...file,
+                        format: file.format as AudioFileFormat,
+                        targetFormat: targetFormat as AudioFileFormat,
                         state: 'ready',
                         convertible: canConvertFileToFormat(file, targetFormat),
                     } satisfies FileWithMetadata;

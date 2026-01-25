@@ -5,6 +5,7 @@ import { join } from 'path';
 import { config } from 'shared/config/app-config';
 import {
     AllowedConversionOptions,
+    AudioConversionOptions,
     DocumentConversionOptions,
     EbookConversionOptions,
     GeoConversionOptions,
@@ -43,6 +44,10 @@ export function registerFileHandlers(): void {
                     name: 'Videos',
                     extensions: Object.keys(VideoConversionOptions),
                 },
+                {
+                    name: 'Audio Files',
+                    extensions: Object.keys(AudioConversionOptions),
+                },
             ],
         });
 
@@ -50,7 +55,6 @@ export function registerFileHandlers(): void {
             return { canceled: true, files: [] };
         }
 
-        // Get file stats for each selected file
         const fs = await import('fs/promises');
         const path = await import('path');
 

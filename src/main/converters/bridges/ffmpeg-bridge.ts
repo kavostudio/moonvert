@@ -5,12 +5,16 @@ import { execSync, spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { VideoFileFormat } from 'shared/types/conversion.types';
+import type { AudioFileFormat, VideoFileFormat, AudioConversionOptions as AudioOptions } from 'shared/types/conversion.types';
 import type { BridgeConversionFunction, BridgeConversionOptions, BridgeConversionResult } from './bridge.types';
 
 type ConversionOptions = BridgeConversionOptions<VideoFileFormat, VideoFileFormat>;
 
 type ConversionResult = BridgeConversionResult<{}, {}>;
+
+type AudioConversionOptions = BridgeConversionOptions<AudioFileFormat, AudioFileFormat, { audioOptions?: Partial<AudioOptions> }>;
+
+type AudioConversionResult = BridgeConversionResult<{}, {}>;
 
 class FfmpegBridge {
     private readonly ffmpegPath: string;
@@ -136,6 +140,55 @@ class FfmpegBridge {
 
         args.push('-progress', 'pipe:1', '-nostats', targetPath);
 
+        return args;
+    }
+
+    private buildAudioArgs(sourcePath: string, targetPath: string, targetFormat: AudioFileFormat, options?: Partial<AudioOptions>): string[] {
+        const args = ['-y', '-i', sourcePath];
+
+        switch (targetFormat) {
+            case 'mp3':
+                args.push('-c:a', 'libmp3lame', '-b:a', `${options?.bitrate || 192}k`);
+                break;
+            case 'flac':
+                args.push('-c:a', 'flac', '-compression_level', '8');
+                break;
+            case 'aac':
+                args.push('-c:a', 'aac', '-b:a', `${options?.bitrate || 192}k`);
+                break;
+            case 'm4a':
+                args.push('-c:a', 'aac', '-b:a', `${options?.bitrate || 192}k`, '-f', 'ipod');
+                break;
+            case 'ogg':
+                args.push('-c:a', 'libvorbis', '-b:a', `${options?.bitrate || 192}k`);
+                break;
+            case 'opus':
+                args.push('-c:a', 'libopus', '-b:a', `${options?.bitrate || 128}k`);
+                break;
+            case 'wav':
+                args.push('-c:a', 'pcm_s16le');
+                break;
+            case 'aiff':
+                args.push('-c:a', 'pcm_s16be', '-f', 'aiff');
+                break;
+            case 'wma':
+                args.push('-c:a', 'wmav2', '-b:a', `${options?.bitrate || 192}k`);
+                break;
+            case 'alac':
+                args.push('-c:a', 'alac');
+                break;
+            default:
+                break;
+        }
+
+        if (options?.sampleRate) {
+            args.push('-ar', String(options.sampleRate));
+        }
+        if (options?.channels) {
+            args.push('-ac', String(options.channels));
+        }
+
+        args.push('-progress', 'pipe:1', '-nostats', targetPath);
         return args;
     }
 
@@ -297,6 +350,165 @@ class FfmpegBridge {
             });
         });
     }
+
+    async convertAudio(options: AudioConversionOptions): Promise<AudioConversionResult> {
+        const { sourcePath, targetPath, targetFormat, onProgress, fileId, abortSignal, audioOptions } = options;
+
+        if (abortSignal.aborted) {
+            const errorMessage = getAbortErrorMessage(abortSignal);
+            onProgress({
+                fileId,
+                status: 'failed',
+                progress: 100,
+                error: errorMessage,
+            });
+            return { success: false, error: errorMessage };
+        }
+
+        const durationMs = await this.getDurationMs(sourcePath);
+
+        return new Promise((resolve) => {
+            let ffmpegProcess: ChildProcess;
+            let errorOutput = '';
+            let settled = false;
+            const initialProgress = 5;
+            let lastProgress = initialProgress;
+
+            const finalize = async (result: AudioConversionResult) => {
+                if (settled) return;
+                settled = true;
+                abortSignal.removeEventListener('abort', onAbort);
+                resolve(result);
+            };
+
+            const onAbort = () => {
+                const errorMessage = getAbortErrorMessage(abortSignal);
+                if (ffmpegProcess && !ffmpegProcess.killed) {
+                    ffmpegProcess.kill('SIGTERM');
+                }
+                onProgress({
+                    fileId,
+                    status: 'failed',
+                    progress: 100,
+                    error: errorMessage,
+                });
+                finalize({ success: false, error: errorMessage });
+            };
+
+            const args = this.buildAudioArgs(sourcePath, targetPath, targetFormat, audioOptions);
+
+            void logDebug('FFmpeg audio conversion starting', {
+                fileId,
+                sourcePath,
+                targetPath,
+                targetFormat,
+                durationMs,
+                args,
+            });
+
+            onProgress({
+                fileId,
+                status: 'processing',
+                progress: initialProgress,
+                message: 'Starting audio conversion...',
+            });
+
+            ffmpegProcess = spawn(this.ffmpegPath, args);
+
+            abortSignal.addEventListener('abort', onAbort, { once: true });
+
+            ffmpegProcess.stdout?.on('data', (chunk) => {
+                const lines = chunk
+                    .toString()
+                    .split('\n')
+                    .map((line: string) => line.trim())
+                    .filter(Boolean);
+
+                for (const line of lines) {
+                    if (line.startsWith('out_time_ms=')) {
+                        const outTimeMs = Number.parseInt(line.replace('out_time_ms=', ''), 10);
+                        if (!Number.isFinite(outTimeMs) || durationMs <= 0) {
+                            continue;
+                        }
+                        const percent = Math.min(99, Math.max(0, Math.floor((outTimeMs / (durationMs * 1000)) * 100)));
+                        if (percent > lastProgress) {
+                            lastProgress = percent;
+                            onProgress({
+                                fileId,
+                                status: 'processing',
+                                progress: percent,
+                                message: 'Converting audio...',
+                            });
+                        }
+                    }
+                }
+            });
+
+            ffmpegProcess.stderr?.on('data', (chunk) => {
+                const message = chunk.toString();
+                errorOutput += message;
+            });
+
+            ffmpegProcess.on('close', async (code) => {
+                if (code === 0) {
+                    try {
+                        const data = await readFile(targetPath);
+                        const fileSize = data.length;
+                        finalize({
+                            success: true,
+                            outputPath: targetPath,
+                            data,
+                            fileSize,
+                        });
+                    } catch (error) {
+                        const message = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMsg = `Failed to read output file: ${message}`;
+                        onProgress({
+                            fileId,
+                            status: 'failed',
+                            progress: 100,
+                            error: errorMsg,
+                        });
+                        finalize({ success: false, error: errorMsg });
+                    }
+                } else {
+                    const errorMessage = errorOutput.trim() || `FFmpeg exited with code ${code}`;
+                    void logDebug('FFmpeg audio conversion failed', {
+                        fileId,
+                        code,
+                        error: errorMessage,
+                    });
+                    onProgress({
+                        fileId,
+                        status: 'failed',
+                        progress: 100,
+                        error: errorMessage,
+                    });
+                    finalize({ success: false, error: errorMessage });
+                }
+            });
+
+            ffmpegProcess.on('error', (error) => {
+                const errorMsg = error.message.includes('ENOENT')
+                    ? 'FFmpeg binary not found. Please re-install the application or run the ffmpeg download script.'
+                    : `FFmpeg process error: ${error.message}`;
+
+                void logDebug('FFmpeg process error', {
+                    fileId,
+                    error: errorMsg,
+                });
+
+                onProgress({
+                    fileId,
+                    status: 'failed',
+                    progress: 100,
+                    error: errorMsg,
+                });
+
+                finalize({ success: false, error: errorMsg });
+            });
+        });
+    }
 }
 
 let ffmpegBridge: FfmpegBridge;
@@ -313,6 +525,12 @@ const convert: BridgeConversionFunction<ConversionOptions, ConversionResult> = a
     return bridge.convert(options);
 };
 
+const convertAudio: BridgeConversionFunction<AudioConversionOptions, AudioConversionResult> = async (options) => {
+    const bridge = getFfmpegBridge();
+    return bridge.convertAudio(options);
+};
+
 export const $$ffmpegBridge = {
     convert,
+    convertAudio,
 };

@@ -1,8 +1,8 @@
-import { createEvent, createStore, sample, combine, split, restore } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
+import type { FileFormat } from 'shared/types/conversion.types';
 import { $$main } from '../model';
 import type { FileGroup } from './helpers';
 import { groupFilesByType } from './helpers';
-import type { FileFormat } from 'shared/types/conversion.types';
 
 type ConfigurationState = {
     steps: FileGroup[];
@@ -29,6 +29,7 @@ const $configState = createStore<ConfigurationState>({
         geospatial: null,
         books: null,
         videos: null,
+        audio: null,
     },
 }).reset(reset);
 
@@ -70,6 +71,7 @@ sample({
                 geospatial: null,
                 books: null,
                 videos: null,
+                audio: null,
             },
         };
     },
