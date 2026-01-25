@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { $$theme } from 'renderer/entities/theme/model';
 import { cn } from 'renderer/lib/utils';
 
@@ -29,12 +30,12 @@ const stars: Star[] = [
     { x: 92, y: 5, opacity: 0.8 },
 ];
 
-function RenderStars() {
+function RenderStars({ ready }: { ready: boolean }) {
     return (
         <div className="pointer-events-none relative h-full w-full">
             {stars.map((star, index) => (
                 <motion.div
-                    animate={{ opacity: star.opacity, scale: 1 }}
+                    animate={ready ? { opacity: star.opacity, scale: 1 } : { opacity: 0, scale: 0 }}
                     className="absolute"
                     initial={{ opacity: 0, scale: 0 }}
                     key={index}
@@ -66,14 +67,23 @@ type DecorativeBackgroundProps = {
 export function DecorativeBackground(props: DecorativeBackgroundProps) {
     const { className = '', topCloudOffset } = props;
     const theme = useUnit($$theme.$theme);
+    const [ready, setReady] = useState(false);
+
+    // Defer animations until after initial render to prevent lag
+    useEffect(() => {
+        const frameId = requestAnimationFrame(() => {
+            setReady(true);
+        });
+        return () => cancelAnimationFrame(frameId);
+    }, []);
 
     return (
         <div className={cn(`relative z-0 h-full w-full overflow-hidden`, className)}>
-            <RenderStars />
+            <RenderStars ready={ready} />
 
             {/* Top right cloud */}
             <motion.div
-                animate={{ opacity: 1, scale: 0.8 }}
+                animate={ready ? { opacity: 1, scale: 0.8 } : { opacity: 0, scale: 0.6 }}
                 className="absolute right-15 rotate-8"
                 initial={{ opacity: 0, scale: 0.6 }}
                 style={{
@@ -98,7 +108,7 @@ export function DecorativeBackground(props: DecorativeBackgroundProps) {
 
             {/* Top right decorative shape */}
             <motion.div
-                animate={{ opacity: 1, y: 0 }}
+                animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
                 className="absolute right-0 bottom-0 rotate-0 overflow-hidden"
                 initial={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
@@ -169,7 +179,7 @@ export function DecorativeBackground(props: DecorativeBackgroundProps) {
 
             {/* Bottom right shape */}
             <motion.div
-                animate={{ opacity: 1, scale: 1 }}
+                animate={ready ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                 className="absolute right-0 bottom-0 h-[98px] w-[182px] overflow-hidden"
                 initial={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
@@ -224,7 +234,12 @@ export function DecorativeBackground(props: DecorativeBackgroundProps) {
             </motion.div>
 
             {/* Top left shape */}
-            <motion.div animate={{ opacity: 1, x: 0 }} className="absolute bottom-0 left-0" initial={{ opacity: 0, x: -20 }} transition={{ duration: 0.8, delay: 0.5 }}>
+            <motion.div
+                animate={ready ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                className="absolute bottom-0 left-0"
+                initial={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+            >
                 {theme === 'light' ? (
                     <svg fill="none" height="111" viewBox="0 0 157 111" width="157" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -276,7 +291,7 @@ export function DecorativeBackground(props: DecorativeBackgroundProps) {
             </motion.div>
 
             {/* bottom left shape */}
-            <motion.div animate={{ opacity: 1 }} className="absolute bottom-0 left-24" initial={{ opacity: 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
+            <motion.div animate={ready ? { opacity: 1 } : { opacity: 0 }} className="absolute bottom-0 left-24" initial={{ opacity: 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
                 {theme === 'light' ? (
                     <svg fill="none" height="56" viewBox="0 0 107 56" width="107" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -337,7 +352,12 @@ export function DecorativeBackground(props: DecorativeBackgroundProps) {
             </motion.div>
 
             {/* Top left cloud */}
-            <motion.div animate={{ opacity: 1, scale: 1 }} className="absolute top-0 left-0" initial={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <motion.div
+                animate={ready ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                className="absolute top-0 left-0"
+                initial={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+            >
                 <svg fill="none" height="212" viewBox="0 0 234 212" width="234" xmlns="http://www.w3.org/2000/svg">
                     <g filter="url(#filter0_f_14_152)">
                         <path
