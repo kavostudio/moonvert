@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { Plus } from 'lucide-react';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { DecorativeBackground } from 'renderer/components/decorative-background';
 import { FileListTable } from 'renderer/components/file-list-table';
 import { GroupIcon } from 'renderer/components/group-icon';
@@ -31,6 +31,30 @@ export function ConfigurationScreen() {
     const totalSteps = steps.length + 1;
     const currentStepNumber = currentStepIndex + 1;
     const isOnSummary = initialized && currentStepIndex === steps.length;
+    const isSingleStep = steps.length === 1;
+
+    // Cmd+Enter hotkey to proceed
+    const handleProceed = useCallback(() => {
+        if (!canProceed && !isOnSummary) return;
+
+        if (isOnSummary || (currentStepIndex === 0 && isSingleStep)) {
+            $$main.startConversion();
+            $$main.navigateTo($$main.Screens.Processing);
+        } else {
+            $$configuration.nextStep();
+        }
+    }, [canProceed, isOnSummary, currentStepIndex, isSingleStep]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.metaKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleProceed();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleProceed]);
 
     useEffect(() => {
         (async () => {
