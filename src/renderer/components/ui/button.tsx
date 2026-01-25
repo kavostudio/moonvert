@@ -15,6 +15,7 @@ const buttonVariants = cva(
                 destructive: 'bg-destructive text-popover-foreground',
                 'destructive-popover': 'bg-popover-destructive text-popover-foreground',
                 icon: 'dark:text-muted-foreground-softer dark:bg-secondary bg-white/70 text-primary',
+                'icon-ghost': 'dark:text-muted-softer bg-transparent text-primary',
             },
             size: {
                 default: 'h-6 py-1 px-2.5',

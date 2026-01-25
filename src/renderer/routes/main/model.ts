@@ -101,6 +101,8 @@ export type FileWithMetadata = {
       } & Formats)
 );
 
+export type FailedFile = FileWithMetadata & { state: 'failed' };
+
 type AppState = {
     currentScreen: ScreenType;
     files: FileWithMetadata[];
