@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import type { DocumentFileFormat, EbookFileFormat } from 'shared/types/conversion.types';
 import { BridgeConversionFunction, BridgeConversionOptions } from './bridge.types';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
+import { createConversionProgress } from '../base/base-converter';
 
 type ConversionOptions = BridgeConversionOptions<DocumentFileFormat | EbookFileFormat, DocumentFileFormat | EbookFileFormat>;
 
@@ -55,12 +56,12 @@ class PandocBridge {
 
         if (abortSignal.aborted) {
             const errorMessage = getAbortErrorMessage(abortSignal);
-            onProgress({
-                fileId,
-                status: 'failed',
-                progress: 100,
-                error: errorMessage,
-            });
+            onProgress(
+                createConversionProgress.failed({
+                    fileId,
+                    error: errorMessage,
+                }),
+            );
             return { success: false, error: errorMessage };
         }
 
@@ -81,12 +82,12 @@ class PandocBridge {
                 if (pandocProcess && !pandocProcess.killed) {
                     pandocProcess.kill('SIGTERM');
                 }
-                onProgress({
-                    fileId,
-                    status: 'failed',
-                    progress: 100,
-                    error: errorMessage,
-                });
+                onProgress(
+                    createConversionProgress.failed({
+                        fileId,
+                        error: errorMessage,
+                    }),
+                );
                 finalize({ success: false, error: errorMessage });
             };
 
@@ -116,12 +117,13 @@ class PandocBridge {
                 targetFormat,
             });
 
-            onProgress({
-                fileId,
-                status: 'processing',
-                progress: 10,
-                message: 'Starting Pandoc conversion...',
-            });
+            onProgress(
+                createConversionProgress.processing({
+                    fileId,
+                    progress: 10,
+                    message: 'Starting Pandoc conversion...',
+                }),
+            );
 
             pandocProcess = spawn(this.pandocPath, args);
 
@@ -136,23 +138,26 @@ class PandocBridge {
                 });
             });
 
-            onProgress({
-                fileId,
-                status: 'processing',
-                progress: 33,
-                message: 'Converting document...',
-            });
+            onProgress(
+                createConversionProgress.processing({
+                    fileId,
+                    progress: 33,
+                    message: 'Converting document...',
+                }),
+            );
 
             pandocProcess.on('close', async (code) => {
                 if (code === 0) {
                     try {
                         const data = await readFile(targetPath);
-                        onProgress({
-                            fileId,
-                            status: 'processing',
-                            progress: 67,
-                            message: 'Finalizing conversion...',
-                        });
+
+                        onProgress(
+                            createConversionProgress.processing({
+                                fileId,
+                                progress: 67,
+                                message: 'Finalizing conversion...',
+                            }),
+                        );
 
                         finalize({
                             success: true,
@@ -169,12 +174,12 @@ class PandocBridge {
                             error: errorMsg,
                         });
 
-                        onProgress({
-                            fileId,
-                            status: 'failed',
-                            progress: 0,
-                            error: errorMsg,
-                        });
+                        onProgress(
+                            createConversionProgress.failed({
+                                fileId,
+                                error: errorMsg,
+                            }),
+                        );
 
                         finalize({
                             success: false,
@@ -190,12 +195,12 @@ class PandocBridge {
                         error: errorMessage,
                     });
 
-                    onProgress({
-                        fileId,
-                        status: 'failed',
-                        progress: 0,
-                        error: errorMessage,
-                    });
+                    onProgress(
+                        createConversionProgress.failed({
+                            fileId,
+                            error: errorMessage,
+                        }),
+                    );
 
                     finalize({
                         success: false,
@@ -214,12 +219,12 @@ class PandocBridge {
                     error: errorMsg,
                 });
 
-                onProgress({
-                    fileId,
-                    status: 'failed',
-                    progress: 0,
-                    error: errorMsg,
-                });
+                onProgress(
+                    createConversionProgress.failed({
+                        fileId,
+                        error: errorMsg,
+                    }),
+                );
 
                 finalize({
                     success: false,
