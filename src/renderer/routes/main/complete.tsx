@@ -98,29 +98,31 @@ export function CompleteScreen() {
                     <h2 className="text-popover-foreground mb-0.5 text-lg font-medium">Converted files</h2>
                     <p className="text-muted-foreground-softer mb-9 text-base">{formatBytes(totalSizeBytes)}</p>
 
-                    <div className="flex items-center gap-3">
-                        <Button onClick={handleCopy} variant="secondary">
-                            Copy
-                        </Button>
+                    {completedFiles.length > 0 && (
+                        <div className="flex items-center gap-3">
+                            <Button onClick={handleCopy} variant="secondary">
+                                Copy
+                            </Button>
 
-                        {/* <Button onClick={handleShare} variant="default">
+                            {/* <Button onClick={handleShare} variant="default">
               Share
             </Button> */}
 
-                        <Button onClick={handleSaveAs} variant="default">
-                            Save As...
-                        </Button>
-                    </div>
+                            <Button onClick={handleSaveAs} variant="default">
+                                Save As...
+                            </Button>
+                        </div>
+                    )}
 
                     {failedFiles.length > 0 && (
                         <div className="mt-3 flex items-center gap-1">
-                            <p className="text-popover-destructive text-sm">
+                            <p className="text-popover-destructive text-base">
                                 {failedFiles.length} file{failedFiles.length > 1 ? 's' : ''} failed to convert.
                             </p>
                             <button
                                 type="button"
                                 onClick={() => setErrorDialogOpen(true)}
-                                className="text-popover-destructive text-sm underline underline-offset-2 transition-colors hover:brightness-125"
+                                className="text-popover-destructive text-base underline underline-offset-2 transition-colors hover:brightness-125"
                                 tabIndex={-1}
                             >
                                 See details
