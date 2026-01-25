@@ -6,6 +6,7 @@ import { type IPCRequest, type IPCResponse, IPCChannels, IPCEvents } from 'share
 import { getConverter } from '../converters';
 import { conversionManager } from 'main/converters/conversion-manager';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
+import { createConversionProgress } from 'main/converters/base/base-converter';
 
 function sendBatchProgress(window: BrowserWindow | undefined, progress: BatchConversionProgress) {
     if (window && !window.isDestroyed()) {
@@ -27,7 +28,7 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
         sendBatchProgress(window, batchProgress);
 
-        const limit = pLimit(cpus().length);
+        const limit = pLimit(Math.max(1, cpus().length - 1));
 
         const results = await Promise.all(
             conversions.map((conversionRequest) =>
@@ -44,12 +45,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
                         };
 
                         batchProgress.failed++;
-                        batchProgress.current = {
+
+                        batchProgress.current = createConversionProgress.failed({
                             fileId,
-                            status: 'failed',
-                            progress: 0,
                             error: errorMsg,
-                        };
+                        });
 
                         sendBatchProgress(window, batchProgress);
 
@@ -67,12 +67,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
                         };
 
                         batchProgress.failed++;
-                        batchProgress.current = {
+
+                        batchProgress.current = createConversionProgress.failed({
                             fileId,
-                            status: 'failed',
-                            progress: 0,
                             error: errorMsg,
-                        };
+                        });
 
                         sendBatchProgress(window, batchProgress);
 
@@ -90,12 +89,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
                         };
 
                         batchProgress.failed++;
-                        batchProgress.current = {
+
+                        batchProgress.current = createConversionProgress.failed({
                             fileId,
-                            status: 'failed',
-                            progress: 0,
                             error: errorResult.error || '',
-                        };
+                        });
 
                         sendBatchProgress(window, batchProgress);
 
