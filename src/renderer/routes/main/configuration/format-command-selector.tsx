@@ -89,6 +89,7 @@ export function FormatCommandSelector({ targetFormat, availableTargets, onTarget
                                     e.preventDefault();
                                     window.open(config.links.github.issues, '_blank');
                                 }}
+                                tabIndex={-1}
                             >
                                 Write us
                             </a>

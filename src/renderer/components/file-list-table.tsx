@@ -68,6 +68,7 @@ export function FileListTable({ files, targetFormat, onRemoveFile, group }: File
                                     )}
                                     onClick={() => onRemoveFile(file.id)}
                                     type="button"
+                                    tabIndex={-1}
                                 >
                                     <X className={cn('size-3.25')} />
                                 </button>

@@ -121,6 +121,7 @@ export function CompleteScreen() {
                                 type="button"
                                 onClick={() => setErrorDialogOpen(true)}
                                 className="text-popover-destructive text-sm underline underline-offset-2 transition-colors hover:brightness-125"
+                                tabIndex={-1}
                             >
                                 See details
                             </button>

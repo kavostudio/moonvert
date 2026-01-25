@@ -74,6 +74,7 @@ export function InformationDialog({ className }: InformationDialogProps) {
                                     }}
                                     rel="noopener noreferrer"
                                     target="_blank"
+                                    tabIndex={-1}
                                 >
                                     Contact us
                                 </a>
@@ -113,6 +114,7 @@ export function InformationDialog({ className }: InformationDialogProps) {
                                     }}
                                     rel="noopener noreferrer"
                                     target="_blank"
+                                    tabIndex={-1}
                                 >
                                     <Icon className="size-3" />
                                     {link.label}
