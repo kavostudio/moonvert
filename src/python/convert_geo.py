@@ -117,7 +117,7 @@ def convert_file(input_path, output_path, source_format, target_format):
         if target_format.lower() == "wkt":
             emit_progress("processing", 70, "Converting geometries to WKT format")
             wkt_series = gdf.geometry.to_wkt()
-            emit_progress("processing", 85, "Writing WKT data to .wkt file")
+            emit_progress("processing", 90, "Writing WKT data to .wkt file")
             with open(final_output_path, "w", encoding="utf-8") as wkt_file:
                 for geom in wkt_series:
                     if geom is None:
@@ -164,7 +164,7 @@ def convert_file(input_path, output_path, source_format, target_format):
         error_msg = str(e)
         stack_trace = traceback.format_exc()
 
-        emit_progress("failed", 0, f"Error: {error_msg}")
+        emit_progress("failed", 100, f"Error: {error_msg}")
         emit_result(False, error=error_msg, traceback=stack_trace)
 
         sys.exit(1)

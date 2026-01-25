@@ -23,7 +23,7 @@ const convert: ConverterFunction<GeoConversionRequest> = async (request, onProgr
         reportProgress({
             ...createConversionProgress.processing({
                 fileId,
-                progress: 10,
+                progress: 3,
             }),
             onProgress,
         });
@@ -32,25 +32,21 @@ const convert: ConverterFunction<GeoConversionRequest> = async (request, onProgr
             reportProgress({
                 ...createConversionProgress.processing({
                     fileId,
-                    progress: 15,
+                    progress: 5,
                     message: 'Checking dependencies',
                 }),
                 onProgress,
             });
             const missingFiles = await checkShapefileDependencies(sourcePath);
             if (missingFiles.length > 0) {
-                return {
-                    fileId,
-                    success: false,
-                    error: `Missing required files: ${missingFiles.join(', ')}`,
-                };
+                throw new Error(`Missing required files: ${missingFiles.join(', ')}`);
             }
         }
 
         reportProgress({
             ...createConversionProgress.processing({
                 fileId,
-                progress: 25,
+                progress: 7,
                 message: `Reading ${sourceFormat.toUpperCase()} file`,
             }),
             onProgress,
@@ -78,6 +74,8 @@ const convert: ConverterFunction<GeoConversionRequest> = async (request, onProgr
             onProgress,
             fileId,
             abortSignal,
+            initialProgress: 15,
+            expectedEndProgress: 95,
         });
 
         if (!result.success) {

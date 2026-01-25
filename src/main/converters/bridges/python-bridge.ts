@@ -9,6 +9,7 @@ import type { GeoFileFormat } from 'shared/types/conversion.types';
 import { z } from 'zod';
 import type { BridgeConversionFunction, BridgeConversionOptions, BridgeConversionResult } from './bridge.types';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
+import { createConversionProgress } from '../base/base-converter';
 
 const PythonProgressMessageSchema = z.discriminatedUnion('type', [
     z.object({
@@ -33,7 +34,14 @@ const PythonProgressMessageSchema = z.discriminatedUnion('type', [
     ]),
 ]);
 
-type ConversionOptions = BridgeConversionOptions<GeoFileFormat, GeoFileFormat>;
+type ConversionOptions = BridgeConversionOptions<
+    GeoFileFormat,
+    GeoFileFormat,
+    {
+        initialProgress: number;
+        expectedEndProgress: number;
+    }
+>;
 
 type ConversionResult = BridgeConversionResult<{ featuresCount?: number }, {}>;
 
@@ -173,7 +181,17 @@ export class PythonBridge {
                         const msg = result.data;
 
                         if (msg.type === 'progress') {
-                            // TODO: Map Python progress to ConversionProgress
+                            // Scale Python's 0-100 progress to initialProgress-expectedEndProgress range
+                            const initialProgress = options.initialProgress ?? 0;
+                            const expectedEndProgress = options.expectedEndProgress ?? 100;
+                            const scaledProgress = initialProgress + (msg.progress / 100) * (expectedEndProgress - initialProgress);
+
+                            onProgress(
+                                createConversionProgress.processing({
+                                    fileId: options.fileId,
+                                    progress: Math.round(scaledProgress),
+                                }),
+                            );
                         } else if (msg.type === 'result') {
                             if (msg.success) {
                                 outputPath = msg.output_path;
@@ -207,12 +225,6 @@ export class PythonBridge {
             });
 
             pythonProcess.on('close', async (code) => {
-                void logDebug('Python process closed', {
-                    fileId,
-                    code,
-                    outputPath,
-                    errorMessage: errorMessage || undefined,
-                });
                 if (code === 0 && outputPath) {
                     try {
                         const { readFile, stat } = await import('fs/promises');
