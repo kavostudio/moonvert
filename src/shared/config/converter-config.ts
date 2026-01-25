@@ -38,20 +38,20 @@ export const ImageConversionOptions = {
 } as const satisfies Partial<Record<ImageFileFormat, ImageFileFormat[]>>;
 
 export const DocumentConversionOptions = {
-    docx: ['odt', 'rtf', 'html', 'md', 'txt', 'tex', 'epub'],
-    odt: ['docx', 'rtf', 'html', 'md', 'txt', 'tex', 'epub'],
-    rtf: ['docx', 'odt', 'html', 'md', 'txt', 'tex'],
+    docx: ['odt', 'rtf', 'html', 'md', 'tex', 'epub'],
+    odt: ['docx', 'rtf', 'html', 'md', 'tex', 'epub'],
+    rtf: ['docx', 'odt', 'html', 'md', 'tex'],
     // txt: ['docx', 'odt', 'rtf', 'html', 'md', 'tex'],
-    md: ['docx', 'odt', 'rtf', 'html', 'txt', 'tex', 'epub'],
-    html: ['docx', 'odt', 'rtf', 'md', 'txt', 'tex', 'epub'],
-    tex: ['docx', 'odt', 'rtf', 'html', 'md', 'txt'],
+    md: ['docx', 'odt', 'rtf', 'html', 'tex', 'epub'],
+    html: ['docx', 'odt', 'rtf', 'md', 'tex', 'epub'],
+    tex: ['docx', 'odt', 'rtf', 'html', 'md'],
     // pdf: ["docx", "odt", "rtf", "html", "md", "txt", "tex", "epub"], // Pandoc does not support conversion from txt
 } as const satisfies Partial<Record<DocumentFileFormat, (DocumentFileFormat | EbookFileFormat)[]>>;
 
 export const EbookConversionOptions = {
-    epub: ['docx', 'html', 'md', 'txt', 'mobi'],
-    mobi: ['epub', 'docx', 'html', 'md', 'txt'],
-    azw3: ['epub', 'docx', 'html', 'md', 'txt'],
+    epub: ['docx', 'html', 'md', 'mobi'],
+    mobi: ['epub', 'docx', 'html', 'md'],
+    azw3: ['epub', 'docx', 'html', 'md'],
 } as const satisfies Partial<Record<EbookFileFormat, (DocumentFileFormat | EbookFileFormat)[]>>;
 
 export const VideoConversionOptions = {
