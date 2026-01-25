@@ -18,30 +18,27 @@ type AudioConversionResult = BridgeConversionResult<{}, {}>;
 
 class FfmpegBridge {
     private readonly ffmpegPath: string;
-    private readonly ffprobePath: string;
     private readonly isDev: boolean;
 
     constructor() {
         this.isDev = process.env.NODE_ENV === 'development';
-        this.ffmpegPath = this.findBinary('ffmpeg');
-        this.ffprobePath = this.findBinary('ffprobe');
+        this.ffmpegPath = this.findFfmpegBinary();
 
         void logDebug('FFmpeg bridge initialized', {
             ffmpegPath: this.ffmpegPath || undefined,
-            ffprobePath: this.ffprobePath || undefined,
             isDev: this.isDev,
         });
     }
 
-    private findBinary(binaryName: 'ffmpeg' | 'ffprobe'): string {
+    private findFfmpegBinary(): string {
         if (this.isDev) {
-            const localPath = join(app.getAppPath(), 'dist', 'ffmpeg', 'darwin-arm64', binaryName);
+            const localPath = join(app.getAppPath(), 'dist', 'ffmpeg', 'darwin-arm64', 'ffmpeg');
             if (existsSync(localPath)) {
                 return localPath;
             }
 
             try {
-                const result = execSync(`which ${binaryName}`, {
+                const result = execSync('which ffmpeg', {
                     encoding: 'utf-8',
                     env: {
                         ...process.env,
@@ -50,35 +47,48 @@ class FfmpegBridge {
                 });
                 return result.trim();
             } catch {
-                const paths = [`/opt/homebrew/bin/${binaryName}`, `/usr/local/bin/${binaryName}`];
-                return paths.find((path) => existsSync(path)) || binaryName;
+                const paths = ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg'];
+                return paths.find((path) => existsSync(path)) || 'ffmpeg';
             }
         }
 
         const resourcesPath = process.resourcesPath;
-        return join(resourcesPath, 'ffmpeg', binaryName);
+        return join(resourcesPath, 'ffmpeg', 'ffmpeg');
     }
 
     private async getDurationMs(sourcePath: string): Promise<number> {
         return new Promise((resolve) => {
-            const args = ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', sourcePath];
-            const probe = spawn(this.ffprobePath, args);
-            let output = '';
+            const args = ['-i', sourcePath, '-f', 'null', '-'];
+            const ffmpeg = spawn(this.ffmpegPath, args);
+            let stderrOutput = '';
 
-            probe.stdout?.on('data', (chunk) => {
-                output += chunk.toString();
+            ffmpeg.stderr?.on('data', (chunk) => {
+                stderrOutput += chunk.toString();
             });
 
-            probe.on('close', () => {
-                const seconds = Number.parseFloat(output.trim());
-                if (!Number.isFinite(seconds) || seconds <= 0) {
-                    resolve(0);
+            ffmpeg.on('close', () => {
+                // Parse duration from stderr output: "Duration: 00:01:23.45"
+                const durationMatch = stderrOutput.match(/Duration:\s*(\d{2}):(\d{2}):(\d{2})\.(\d{2,3})/);
+                if (durationMatch) {
+                    const hours = Number.parseInt(durationMatch[1], 10);
+                    const minutes = Number.parseInt(durationMatch[2], 10);
+                    const seconds = Number.parseInt(durationMatch[3], 10);
+                    const centiseconds = Number.parseInt(durationMatch[4].padEnd(3, '0'), 10);
+                    const totalMs = hours * 3600000 + minutes * 60000 + seconds * 1000 + centiseconds;
+                    resolve(totalMs);
                     return;
                 }
-                resolve(Math.round(seconds * 1000));
+                resolve(0);
             });
 
-            probe.on('error', () => resolve(0));
+            ffmpeg.on('error', () => resolve(0));
+
+            // Kill the process quickly - we only need the metadata which appears immediately
+            setTimeout(() => {
+                if (!ffmpeg.killed) {
+                    ffmpeg.kill('SIGTERM');
+                }
+            }, 2000);
         });
     }
 

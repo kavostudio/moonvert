@@ -25,7 +25,7 @@ if [ "$PLATFORM" = "darwin" ]; then
 fi
 
 if [ "$PLATFORM" = "darwin" ]; then
-  echo "Downloading FFmpeg binaries..."
+  echo "Downloading FFmpeg binary..."
   bash scripts/download-ffmpeg-darwin.sh
   echo ""
 fi
@@ -47,13 +47,12 @@ else
   echo "Pandoc executables not found"
 fi
 
-if [ -f "dist/ffmpeg/$PLATFORM-arm64/ffmpeg" ] && [ -f "dist/ffmpeg/$PLATFORM-arm64/ffprobe" ]; then
-  echo "✓ FFmpeg binaries found"
+if [ -f "dist/ffmpeg/$PLATFORM-arm64/ffmpeg" ]; then
+  echo "✓ FFmpeg binary found"
   echo "  ARM64:"
   ls -lh dist/ffmpeg/$PLATFORM-arm64/ffmpeg | awk '{print "    ffmpeg: " $5}'
-  ls -lh dist/ffmpeg/$PLATFORM-arm64/ffprobe | awk '{print "    ffprobe: " $5}'
 else
-  echo "FFmpeg binaries not found"
+  echo "FFmpeg binary not found"
 fi
 
 if [ -f "dist/python/$PLATFORM/convert_geo" ] || [ -f "dist/python/$PLATFORM/convert_geo.exe" ]; then
