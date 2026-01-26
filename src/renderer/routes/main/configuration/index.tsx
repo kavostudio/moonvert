@@ -99,7 +99,7 @@ export function ConfigurationScreen() {
                             <>
                                 <div className="mt-8 flex flex-col items-center gap-4">
                                     <GroupIcon group={currentGroup} />
-                                    <p className="text-popover-foreground text-2xl font-bold">Configure {getGroupDisplayName(currentGroup)}</p>
+                                    <p className="text-popover-foreground text-2xl font-bold">{getGroupDisplayName(currentGroup)}</p>
                                 </div>
                                 <FormatCommandSelector
                                     availableTargets={availableTargets}

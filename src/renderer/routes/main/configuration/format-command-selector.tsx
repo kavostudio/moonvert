@@ -38,8 +38,8 @@ export function FormatCommandSelector({ targetFormat, availableTargets, onTarget
     return (
         <div className="mt-8 flex items-center justify-center">
             <Button onClick={() => setOpen(true)} size="lg" className="min-w-40 justify-between" variant={'secondary'}>
-                <span className="truncate">{selectedMetadata?.name || 'Choose format...'}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                <span className="truncate">{selectedMetadata?.name || 'Choose format'}</span>
+                <ChevronDown className="size-5 shrink-0" />
             </Button>
 
             <Dialog onOpenChange={setOpen} open={open}>
