@@ -46,16 +46,16 @@
     },
     "dependencies": {
         "@imagemagick/magick-wasm": "^0.0.37",
-        "@radix-ui/react-dialog": "^1.1.15",
-        "@radix-ui/react-popover": "^1.1.15",
         "archiver": "^7.0.1",
-        "cmdk": "^1.1.1",
         "electron-updater": "^6.3.1",
         "electron-window-state": "^5.0.3",
         "plist": "^3.1.0"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.3.8",
+        "@radix-ui/react-dialog": "^1.1.15",
+        "@radix-ui/react-popover": "^1.1.15",
+        "cmdk": "^1.1.1",
         "@radix-ui/react-slot": "^1.2.4",
         "@tailwindcss/vite": "^4.1.17",
         "@types/archiver": "^7.0.0",
