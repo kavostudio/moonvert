@@ -85,7 +85,7 @@ export function CompleteScreen() {
                 </>
             }
         >
-            <div className="gradient-bg relative flex h-full w-full flex-col items-center justify-center rounded-b-[20px]">
+            <div className="gradient-bg relative flex h-full w-full flex-col items-center justify-center">
                 <div className="absolute top-0 left-0 size-full">
                     <DecorativeBackground topCloudOffset={-25} />
                 </div>
