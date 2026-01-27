@@ -13,7 +13,6 @@ export async function MainWindow(options: BrowserWindowConstructorOptions) {
         height: 448,
         minWidth: 708,
         minHeight: 448,
-        backgroundColor: nativeTheme.shouldUseDarkColors ? '#1f1f1f' : '#ffffff',
         show: false,
         center: true,
         movable: true,
@@ -21,7 +20,7 @@ export async function MainWindow(options: BrowserWindowConstructorOptions) {
         alwaysOnTop: false,
         autoHideMenuBar: true,
         titleBarStyle: 'hiddenInset',
-        frame: true,
+        frame: false,
 
         webPreferences: {
             preload: join(__dirname, '../preload/index.js'),
