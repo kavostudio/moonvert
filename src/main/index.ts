@@ -220,6 +220,21 @@ makeAppWithSingleInstanceLock(async () => {
             }
         });
 
+        // Abort all conversions when the window is reloaded in dev mode (Cmd+R, etc.)
+        if (ENVIRONMENT.IS_DEV) {
+            window.webContents.on('will-navigate', () => {
+                void logDebug('Window will navigate (reload), aborting all conversions');
+                conversionManager.abortAll('Window reloaded');
+            });
+
+            window.webContents.on('did-start-navigation', (_event, _url, isInPlace) => {
+                if (isInPlace) {
+                    void logDebug('Window did start in-place navigation (reload), aborting all conversions');
+                    conversionManager.abortAll('Window reloaded');
+                }
+            });
+        }
+
         if (!handlersRegistered) {
             registerConversionHandlers(window);
             registerFileHandlers();

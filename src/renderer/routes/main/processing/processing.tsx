@@ -9,6 +9,32 @@ import { RenderMoon } from './render-moon';
 import { Button } from 'renderer/components/ui/button';
 import { XIcon } from 'lucide-react';
 
+const MAX_FILES_DISPLAYED = 4;
+const MAX_FILENAME_LENGTH = 15;
+
+function truncateFilename(filename: string, maxLength: number = MAX_FILENAME_LENGTH): string {
+    if (filename.length <= maxLength) {
+        return filename;
+    }
+
+    const lastDotIndex = filename.lastIndexOf('.');
+    const hasExtension = lastDotIndex > 0;
+
+    if (!hasExtension) {
+        return `${filename.slice(0, maxLength - 3)}...`;
+    }
+
+    const extension = filename.slice(lastDotIndex);
+    const name = filename.slice(0, lastDotIndex);
+    const availableLength = maxLength - extension.length - 4; // 4 for "... "
+
+    if (availableLength <= 0) {
+        return `${filename.slice(0, maxLength - 3)}...`;
+    }
+
+    return `${name.slice(0, availableLength)}... ${extension}`;
+}
+
 export function ProcessingScreen() {
     const { files } = useUnit($$main.$appState);
     const theme = useUnit($$theme.$theme);
@@ -18,6 +44,11 @@ export function ProcessingScreen() {
     const totalFiles = files.length;
     const completedFiles = files.filter((f) => f.state === 'completed' || (f.state === 'converting' && f.progress === 100)).length;
     const failedFiles = files.filter((f) => f.state === 'failed');
+
+    const convertingFiles = files.filter((f) => f.state === 'converting');
+
+    const displayingConvertingFiles = convertingFiles.slice(0, MAX_FILES_DISPLAYED);
+    const leftoverFilesCount = convertingFiles.length - displayingConvertingFiles.length;
 
     const currentFilesProgress = files.reduce((acc, file) => {
         if (file.state === 'completed') {
@@ -84,12 +115,25 @@ export function ProcessingScreen() {
 
                 <DecorativeBackground topCloudOffset={-50} />
 
-                <div className="absolute top-[calc(50%+15px)] left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-center">
-                    <p className="text-popover-foreground text-[78px] leading-normal transition-all">{formatedProgress}%</p>
-
+                <div className="absolute top-[calc(50%-10px)] left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 text-center">
+                    <p className="text-popover-foreground text-[78px] leading-21.5 transition-all">{formatedProgress}%</p>
                     <p className="text-muted-foreground-softer dark:text-muted-foreground-softer text-base whitespace-pre-wrap">
                         {processedFiles}/{totalFiles} files
                     </p>
+                </div>
+
+                <div className="absolute top-[calc(50%+48px)] left-1/2 h-24 -translate-x-1/2 gap-2 text-center">
+                    <div className="flex flex-col gap-0.5">
+                        {displayingConvertingFiles.map((file) => {
+                            return (
+                                <div key={file.id} className="text-muted-foreground-softer dark:text-muted-foreground-softer flex items-center gap-2 text-base">
+                                    <p className="w-28">{truncateFilename(file.name)}</p>
+                                    <p>{Math.floor(file.progress).toFixed(0)}%</p>
+                                </div>
+                            );
+                        })}
+                        {leftoverFilesCount > 0 && <p className="text-muted-foreground-softer/60 text-sm">+{leftoverFilesCount} more</p>}
+                    </div>
                 </div>
             </div>
         </ScreenWrapper>

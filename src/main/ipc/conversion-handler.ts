@@ -1,5 +1,5 @@
 import { type BrowserWindow, ipcMain } from 'electron';
-import { cpus } from 'node:os';
+import { availableParallelism, cpus } from 'node:os';
 import pLimit from 'p-limit';
 import type { BatchConversionProgress, ConversionProgress, ConversionResult } from 'shared/types/conversion.types';
 import { type IPCRequest, type IPCResponse, IPCChannels, IPCEvents } from 'shared/ipc/ipc-config';
@@ -28,7 +28,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
         sendBatchProgress(window, batchProgress);
 
-        const limit = pLimit(Math.max(1, cpus().length - 1));
+        const availableCores = availableParallelism();
+        const coresLimit = Math.max(1, availableCores - 2);
+        console.log(`System has ${cpus().length} CPU cores, using up to ${coresLimit} for conversions.`);
+
+        const limit = pLimit(coresLimit);
 
         const results = await Promise.all(
             conversions.map((conversionRequest) =>
