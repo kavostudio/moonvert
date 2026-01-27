@@ -26,12 +26,12 @@ export function ScreenWrapper(props: ScreenWrapperProps) {
 
     return (
         <motion.div
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1 }}
             className="drag h-full w-full"
-            exit={{ opacity: 1, scale: 0.98 }}
-            initial={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
             key={key}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
         >
             <div className={cn('bg-background relative flex h-full w-full flex-col overflow-auto', className)} {...rest}>
                 <ScreenHeader className={props.headerClassName}>{props.headerChildren}</ScreenHeader>

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { Plus, Upload } from 'lucide-react';
+import { FilePlus, FileSearchCorner, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { DecorativeBackground } from 'renderer/components/decorative-background';
@@ -270,13 +270,13 @@ export function HomeScreen() {
                     initial={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                 >
-                    <p className="text-muted-foreground-softer text-base">Drag and drop files</p>
+                    <p className="text-muted-foreground-softer text-base font-medium">Drag and drop files</p>
 
                     <p className="text-muted-foreground text-center text-sm">or</p>
 
                     <Button className="flex items-center gap-2" onClick={handleUploadClick} variant={'secondary'}>
-                        <Upload className="size-4" />
-                        <span>Upload</span>
+                        <FileSearchCorner className="size-4 stroke-2" />
+                        <span>Select files</span>
                     </Button>
                 </motion.div>
             </motion.div>

@@ -80,7 +80,7 @@ export function CompleteScreen() {
                         <ArrowLeft className="size-4 stroke-[2.8px]" />
                     </Button>
                     <Button onClick={handleNewConversion} variant="icon" size="icon">
-                        <Plus className="size-4" />
+                        <Plus className="size-4 stroke-[2.8px]" />
                     </Button>
                 </>
             }

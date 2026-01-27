@@ -6,7 +6,6 @@ import { $$theme } from 'renderer/entities/theme/model';
 import { ScreenWrapper } from 'renderer/components/screen-wrapper';
 import { DecorativeBackground } from 'renderer/components/decorative-background';
 import { RenderMoon } from './render-moon';
-import { RenderSun } from './render-sun';
 import { Button } from 'renderer/components/ui/button';
 import { XIcon } from 'lucide-react';
 
@@ -83,7 +82,7 @@ export function ProcessingScreen() {
                     {theme === 'dark' ? <RenderMoon /> : <></>}
                 </motion.div>
 
-                <DecorativeBackground />
+                <DecorativeBackground topCloudOffset={-50} />
 
                 <div className="absolute top-[calc(50%+15px)] left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-center">
                     <p className="text-popover-foreground text-[78px] leading-normal transition-all">{formatedProgress}%</p>
