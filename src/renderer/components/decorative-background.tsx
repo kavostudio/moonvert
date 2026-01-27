@@ -15,7 +15,7 @@ const stars: Star[] = [
     { x: 8, y: 12, opacity: 0.75 },
     { x: 15, y: 22, opacity: 0.85 },
     { x: 24, y: 17, opacity: 0.8 },
-    { x: 32, y: 28, opacity: 0.9 },
+    { x: 32, y: 18, opacity: 0.9 },
     { x: 35, y: 8, opacity: 0.7 },
     { x: 41, y: 15, opacity: 0.9 },
     { x: 52, y: 10, opacity: 0.7 },

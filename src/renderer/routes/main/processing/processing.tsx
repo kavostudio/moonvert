@@ -58,7 +58,7 @@ export function ProcessingScreen() {
     return (
         <ScreenWrapper
             headerChildren={
-                <Button variant={'destructive'} onClick={() => $$main.cancelAllConversions()} disabled={allFilesProcessed}>
+                <Button variant={'destructive'} size="icon" onClick={() => $$main.cancelAllConversions()} disabled={allFilesProcessed}>
                     <XIcon className="text-muted-foreground text-popover-destructive size-5" />
                 </Button>
             }
