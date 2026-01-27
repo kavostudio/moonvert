@@ -25,8 +25,8 @@ if [ "$PLATFORM" = "darwin" ]; then
 fi
 
 if [ "$PLATFORM" = "darwin" ]; then
-  echo "Downloading FFmpeg binary..."
-  bash scripts/download-ffmpeg-darwin.sh
+  echo "Building FFmpeg binary..."
+  bash scripts/build-ffmpeg-darwin.sh
   echo ""
 fi
 
