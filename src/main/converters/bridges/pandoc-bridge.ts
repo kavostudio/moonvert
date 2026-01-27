@@ -1,12 +1,13 @@
+import { app } from 'electron';
+import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import { logDebug } from 'main/utils/debug-logger';
-import { execSync, spawn, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { DocumentFileFormat, EbookFileFormat } from 'shared/types/conversion.types';
-import { BridgeConversionFunction, BridgeConversionOptions } from './bridge.types';
-import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import { createConversionProgress } from '../base/base-converter';
+import type { BridgeConversionFunction, BridgeConversionOptions } from './bridge.types';
 
 type ConversionOptions = BridgeConversionOptions<DocumentFileFormat | EbookFileFormat, DocumentFileFormat | EbookFileFormat>;
 
@@ -28,26 +29,16 @@ class PandocBridge {
     }
 
     private findPandoc(): string {
-        // Dev: use system Pandoc
         if (this.isDev) {
-            try {
-                const result = execSync('which pandoc', {
-                    encoding: 'utf-8',
-                    env: {
-                        ...process.env,
-                        PATH: ['/opt/homebrew/bin', '/usr/local/bin', process.env.PATH || ''].join(':'),
-                    },
-                });
-                return result.trim();
-            } catch {
-                const paths = ['/opt/homebrew/bin/pandoc', '/usr/local/bin/pandoc'];
-                return paths.find((path) => existsSync(path)) || 'pandoc';
+            const localPath = join(app.getAppPath(), 'dist', 'pandoc', 'darwin-arm64', 'pandoc');
+            if (existsSync(localPath)) {
+                return localPath;
             }
+
+            throw new Error('Pandoc binary not found. Run: ./scripts/download-pandoc-darwin.sh');
         }
 
-        // Prod: use bundled binary
         const resourcesPath = process.resourcesPath;
-
         return join(resourcesPath, 'pandoc', 'pandoc');
     }
 

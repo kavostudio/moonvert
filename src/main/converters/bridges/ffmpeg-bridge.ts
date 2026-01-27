@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import { logDebug } from 'main/utils/debug-logger';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
-import { execSync, spawn, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -37,19 +37,7 @@ class FfmpegBridge {
                 return localPath;
             }
 
-            try {
-                const result = execSync('which ffmpeg', {
-                    encoding: 'utf-8',
-                    env: {
-                        ...process.env,
-                        PATH: ['/opt/homebrew/bin', '/usr/local/bin', process.env.PATH || ''].join(':'),
-                    },
-                });
-                return result.trim();
-            } catch {
-                const paths = ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg'];
-                return paths.find((path) => existsSync(path)) || 'ffmpeg';
-            }
+            throw new Error('FFmpeg binary not found. Run: ./scripts/download-ffmpeg-darwin.sh');
         }
 
         const resourcesPath = process.resourcesPath;
