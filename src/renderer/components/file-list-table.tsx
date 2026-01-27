@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { OctagonX, X } from 'lucide-react';
 import { cn } from 'renderer/lib/utils';
 import { FileGroup, getGroupDisplayName } from 'renderer/routes/main/configuration/helpers';
@@ -45,36 +46,43 @@ export function FileListTable({ files, targetFormat, onRemoveFile, group }: File
                 </div>
 
                 <div className="no-drag flex max-h-72 w-full flex-col gap-1 overflow-y-auto">
-                    {files.map((file) => {
-                        const hasWarning = Boolean(targetFormat && file.state === 'ready' && file.convertible === false);
+                    <AnimatePresence initial={false} mode="popLayout">
+                        {files.map((file) => {
+                            const hasWarning = Boolean(targetFormat && file.state === 'ready' && file.convertible === false);
 
-                        return (
-                            <div
-                                className={cn(`flex items-center gap-1 px-5 py-0`, {
-                                    'bg-destructive': hasWarning,
-                                })}
-                                key={file.id}
-                            >
-                                <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1.5 pt-1">
-                                    <p className="text-popover flex-1 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{file.name}</p>
-                                </div>
-                                <p className="text-muted w-20 shrink-0 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{file.format}</p>
-                                <p className="text-muted w-20 shrink-0 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{formatFileSize(file.size)}</p>
-
-                                <button
-                                    className={cn(
-                                        'flex size-4.5 shrink-0 items-center justify-center',
-                                        hasWarning ? 'bg-popover-destructive text-popover-foreground rounded-md' : 'text-muted',
-                                    )}
-                                    onClick={() => onRemoveFile(file.id)}
-                                    type="button"
-                                    tabIndex={-1}
+                            return (
+                                <motion.div
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className={cn(`flex items-center gap-1 px-5 py-0`, {
+                                        'bg-destructive': hasWarning,
+                                    })}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    initial={{ opacity: 1, height: 'auto' }}
+                                    key={file.id}
+                                    layout
+                                    transition={{ duration: 0.15, ease: 'easeOut' }}
                                 >
-                                    <X className={cn('size-3.25')} />
-                                </button>
-                            </div>
-                        );
-                    })}
+                                    <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1.5 pt-1">
+                                        <p className="text-popover flex-1 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{file.name}</p>
+                                    </div>
+                                    <p className="text-muted w-20 shrink-0 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{file.format}</p>
+                                    <p className="text-muted w-20 shrink-0 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{formatFileSize(file.size)}</p>
+
+                                    <button
+                                        className={cn(
+                                            'flex size-4.5 shrink-0 items-center justify-center',
+                                            hasWarning ? 'bg-popover-destructive text-popover-foreground rounded-md' : 'text-muted',
+                                        )}
+                                        onClick={() => onRemoveFile(file.id)}
+                                        type="button"
+                                        tabIndex={-1}
+                                    >
+                                        <X className={cn('size-3.25')} />
+                                    </button>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
