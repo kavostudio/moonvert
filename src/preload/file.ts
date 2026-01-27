@@ -14,15 +14,6 @@ export const fileAPI = {
         return ipcRenderer.invoke(IPCChannels.files.saveDroppedFile, request);
     },
 
-    saveFileAs: (fileId: string, data: Buffer, suggestedFileName: string): Promise<IPCResponse<'file:save-as'>> => {
-        const request: IPCRequest<'file:save-as'> = {
-            fileId,
-            data,
-            suggestedFileName,
-        };
-        return ipcRenderer.invoke(IPCChannels.files.saveAs, request);
-    },
-
     saveAllToFolder: (
         files: Array<{
             fileId: string;

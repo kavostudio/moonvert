@@ -1,4 +1,4 @@
-import type { BatchConversionProgress, BatchConversionRequest, ConversionProgress, ConversionRequest, ConversionResult } from '../types/conversion.types';
+import type { BatchConversionProgress, BatchConversionRequest, ConversionRequest, ConversionResult } from '../types/conversion.types';
 
 export type SelectedFile = {
     path: string;
@@ -37,18 +37,6 @@ export type CancelAllConversionsRequest = void;
 
 export type CancelAllConversionsResult = {
     success: boolean;
-};
-
-export type SaveFileAsRequest = {
-    fileId: string;
-    data: Buffer;
-    suggestedFileName: string;
-};
-
-export type SaveFileAsResult = {
-    success: boolean;
-    savedPath?: string;
-    error?: string;
 };
 
 export type SaveAllToFolderRequest = {
@@ -127,10 +115,6 @@ export type IPCChannelMap = {
         request: CancelAllConversionsRequest;
         response: CancelAllConversionsResult;
     };
-    'file:save-as': {
-        request: SaveFileAsRequest;
-        response: SaveFileAsResult;
-    };
     'file:save-all-to-folder': {
         request: SaveAllToFolderRequest;
         response: SaveAllToFolderResult;
@@ -181,7 +165,6 @@ export const IPCChannels = {
     files: {
         selectFiles: 'file:select-files',
         saveDroppedFile: 'file:save-dropped-file',
-        saveAs: 'file:save-as',
         saveAllToFolder: 'file:save-all-to-folder',
         copyToClipboard: 'file:copy-to-clipboard',
     },

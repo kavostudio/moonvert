@@ -274,9 +274,8 @@ export function HomeScreen() {
 
                     <p className="text-muted-foreground text-center text-sm">or</p>
 
-                    <Button className="flex items-center gap-2" onClick={handleUploadClick} variant={'secondary'}>
-                        <FileSearchCorner className="size-4 stroke-2" />
-                        <span>Select files</span>
+                    <Button onClick={handleUploadClick} variant={'secondary'}>
+                        Select files
                     </Button>
                 </motion.div>
             </motion.div>

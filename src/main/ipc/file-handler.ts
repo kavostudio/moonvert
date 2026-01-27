@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { BrowserWindow, app, clipboard, dialog, ipcMain } from 'electron';
+import { BrowserWindow, app, clipboard, dialog, ipcMain, shell } from 'electron';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { config } from 'shared/config/app-config';
@@ -129,40 +129,6 @@ export function registerFileHandlers(): void {
         },
     );
 
-    ipcMain.handle(IPCChannels.files.saveAs, async (event, { fileId, data, suggestedFileName }: IPCRequest<'file:save-as'>): Promise<IPCResponse<'file:save-as'>> => {
-        try {
-            const window = BrowserWindow.fromWebContents(event.sender);
-
-            const result = await dialog.showSaveDialog(window!, {
-                defaultPath: suggestedFileName,
-                filters: [
-                    {
-                        name: 'Converted File',
-                        extensions: [suggestedFileName.split('.').pop() || '*'],
-                    },
-                    { name: 'All Files', extensions: ['*'] },
-                ],
-            });
-
-            if (result.canceled || !result.filePath) {
-                return { success: false, error: 'Save canceled by user' };
-            }
-
-            await writeFile(result.filePath, data);
-
-            return {
-                success: true,
-                savedPath: result.filePath,
-            };
-        } catch (error) {
-            void logDebug('Failed to save file', { fileId, error });
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Unknown error',
-            };
-        }
-    });
-
     ipcMain.handle(IPCChannels.files.saveAllToFolder, async (event, { files }: IPCRequest<'file:save-all-to-folder'>): Promise<IPCResponse<'file:save-all-to-folder'>> => {
         try {
             const window = BrowserWindow.fromWebContents(event.sender);
@@ -173,7 +139,6 @@ export function registerFileHandlers(): void {
             });
 
             if (result.canceled || result.filePaths.length === 0) {
-                return { success: false, error: 'Folder selection canceled by user' };
             }
 
             const destFolder = result.filePaths[0];
@@ -198,6 +163,8 @@ export function registerFileHandlers(): void {
                 await writeFile(finalPath, file.data);
                 savedPaths[file.fileId] = finalPath;
             }
+
+            shell.openPath(destFolder);
 
             return {
                 success: true,
@@ -268,7 +235,6 @@ export function registerFileHandlers(): void {
 export function unregisterFileHandlers(): void {
     ipcMain.removeHandler(IPCChannels.files.selectFiles);
     ipcMain.removeHandler(IPCChannels.files.saveDroppedFile);
-    ipcMain.removeHandler(IPCChannels.files.saveAs);
     ipcMain.removeHandler(IPCChannels.files.saveAllToFolder);
     ipcMain.removeHandler(IPCChannels.files.copyToClipboard);
 }

@@ -109,7 +109,7 @@ export function CompleteScreen() {
             </Button> */}
 
                             <Button onClick={handleSaveAs} variant="default">
-                                Save As...
+                                Save As
                             </Button>
                         </div>
                     )}
