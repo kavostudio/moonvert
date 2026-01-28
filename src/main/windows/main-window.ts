@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, shell, type BrowserWindowConstructorOptions } from 'electron';
+import { app, BrowserWindow, shell, type BrowserWindowConstructorOptions } from 'electron';
 import { join } from 'node:path';
 
 import { createWindow } from 'lib/electron-app/factories/windows/create';
@@ -14,13 +14,15 @@ export async function MainWindow(options: BrowserWindowConstructorOptions) {
         minWidth: 708,
         minHeight: 448,
         show: false,
-        center: true,
+        center: false,
         movable: true,
         resizable: false,
         alwaysOnTop: false,
         autoHideMenuBar: true,
         titleBarStyle: 'hiddenInset',
         frame: false,
+        backgroundMaterial: 'auto',
+        transparent: true,
 
         webPreferences: {
             preload: join(__dirname, '../preload/index.js'),
