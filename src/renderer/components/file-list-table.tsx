@@ -26,27 +26,27 @@ export function FileListTable({ files, targetFormat, onRemoveFile, group }: File
                 {anyWarning && targetFormat && (
                     <div className="text-popover-destructive flex items-center gap-1.5">
                         <OctagonX className="size-3.5" />
-                        <p className="leading-nont">Selected format is not supported for some files</p>
+                        <p className="text-sm leading-none">Selected format is not supported for some files</p>
                     </div>
                 )}
             </div>
 
-            <div className="flex flex-1 flex-col gap-1">
-                <div className="border-border flex h-7 items-center gap-1 border-b px-5 py-1.25">
-                    <div className="flex flex-1 items-center gap-0.5">
-                        <p className="text-muted text-sm">Name</p>
-                    </div>
-                    <div className="flex h-full w-20 shrink-0 items-center">
-                        <p className="text-muted text-sm">Format</p>
-                    </div>
-                    <div className="flex h-full w-20 shrink-0 items-center">
-                        <p className="text-muted text-sm">Size</p>
-                    </div>
-                    <div className="flex h-full w-8 shrink-0 items-center" />
+            <div className="border-border flex h-7 items-center gap-1 border-b px-5 py-1.25">
+                <div className="flex flex-1 items-center gap-0.5">
+                    <p className="text-muted text-sm">Name</p>
                 </div>
+                <div className="flex h-full w-20 shrink-0 items-center">
+                    <p className="text-muted text-sm">Format</p>
+                </div>
+                <div className="flex h-full w-20 shrink-0 items-center">
+                    <p className="text-muted text-sm">Size</p>
+                </div>
+                <div className="flex h-full w-8 shrink-0 items-center" />
+            </div>
 
+            <div className="overflow-x-hidden px-1 [scrollbar-gutter:stable]">
                 <div className="no-drag flex max-h-72 w-full flex-col gap-1 overflow-y-auto">
-                    <AnimatePresence initial={false} mode="popLayout">
+                    <AnimatePresence initial={false}>
                         {files.map((file) => {
                             const hasWarning = Boolean(targetFormat && file.state === 'ready' && file.convertible === false);
 
@@ -59,8 +59,8 @@ export function FileListTable({ files, targetFormat, onRemoveFile, group }: File
                                     exit={{ opacity: 0, height: 0 }}
                                     initial={{ opacity: 1, height: 'auto' }}
                                     key={file.id}
-                                    layout
-                                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                                    layout="size"
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
                                 >
                                     <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1.5 pt-1">
                                         <p className="text-popover flex-1 overflow-hidden text-base overflow-ellipsis whitespace-nowrap">{file.name}</p>
