@@ -103,10 +103,9 @@ export type ProcessingConversionProgress = BaseConversionProgress & {
 export type CompletedConversionProgress = BaseConversionProgress & {
     status: 'completed';
     progress: 100;
-    data: Buffer;
+    tempPath: string;
     suggestedFileName: string;
     fileSize: number;
-    savedPath?: string;
 };
 
 export type FailedConversionProgress = BaseConversionProgress & {
@@ -120,15 +119,13 @@ export type ConversionProgress = ProcessingConversionProgress | CompletedConvers
 export type ConversionResult = {
     fileId: string;
     success: boolean;
-    tempPath?: string; // Temporary file path (for large files)
     message?: string;
 } & (
     | {
           success: true;
-          data: Buffer;
+          tempPath: string;
           suggestedFileName: string;
           fileSize: number;
-          savedPath?: string;
       }
     | {
           success: false;

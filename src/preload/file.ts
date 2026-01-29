@@ -17,7 +17,7 @@ export const fileAPI = {
     saveAllToFolder: (
         files: Array<{
             fileId: string;
-            data: Buffer;
+            tempPath: string;
             suggestedFileName: string;
         }>,
     ): Promise<IPCResponse<'file:save-all-to-folder'>> => {
@@ -28,7 +28,7 @@ export const fileAPI = {
     copyToClipboard: (
         files: Array<{
             fileId: string;
-            data: Buffer;
+            tempPath: string;
             suggestedFileName: string;
         }>,
     ): Promise<IPCResponse<'file:copy-to-clipboard'>> => {

@@ -63,7 +63,7 @@ const convert: ConverterFunction<AudioConversionRequest> = async (request, onPro
     reportProgress({
         ...createConversionProgress.completed({
             fileId,
-            data: result.data,
+            tempPath: result.outputPath,
             suggestedFileName: outputFileName,
             fileSize: result.fileSize,
         }),
@@ -73,10 +73,9 @@ const convert: ConverterFunction<AudioConversionRequest> = async (request, onPro
     return {
         fileId,
         success: true,
-        data: result.data,
         suggestedFileName: outputFileName,
         fileSize: result.fileSize,
-        tempPath: finalOutputPath,
+        tempPath: result.outputPath,
         message: `Converted to ${targetFormat.toUpperCase()}`,
     };
 };

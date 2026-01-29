@@ -3,7 +3,7 @@ import { logDebug } from 'main/utils/debug-logger';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { AudioFileFormat, VideoFileFormat, AudioConversionOptions as AudioOptions } from 'shared/types/conversion.types';
 import type { BridgeConversionFunction, BridgeConversionOptions, BridgeConversionResult } from './bridge.types';
@@ -398,12 +398,11 @@ class FfmpegBridge {
             ffmpegProcess.on('close', async (code) => {
                 if (code === 0) {
                     try {
-                        const data = await readFile(targetPath);
-                        const fileSize = data.length;
+                        const stats = await stat(targetPath);
+                        const fileSize = stats.size;
                         finalize({
                             success: true,
                             outputPath: targetPath,
-                            data,
                             fileSize,
                         });
                     } catch (error) {

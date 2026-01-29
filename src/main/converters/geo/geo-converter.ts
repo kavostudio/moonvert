@@ -95,7 +95,6 @@ const convert: ConverterFunction<GeoConversionRequest> = async (request, onProgr
         let conversionResult: ConversionResult = {
             fileId,
             success: true,
-            data: result.data,
             suggestedFileName: defaultFileName,
             fileSize: result.fileSize,
             tempPath: result.outputPath || finalOutputPath,
@@ -119,7 +118,7 @@ const convert: ConverterFunction<GeoConversionRequest> = async (request, onProgr
         reportProgress({
             ...createConversionProgress.completed({
                 fileId,
-                data: conversionResult.data,
+                tempPath: conversionResult.tempPath,
                 suggestedFileName: conversionResult.suggestedFileName,
                 fileSize: conversionResult.fileSize,
             }),

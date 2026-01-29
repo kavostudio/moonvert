@@ -88,8 +88,7 @@ export type FileWithMetadata = {
       } & Formats)
     | ({
           state: 'completed';
-          resultData: Buffer;
-          resultPath?: string;
+          resultPath: string;
           isSaving?: boolean;
           suggestedFileName: string;
           convertedSize: number;
@@ -443,9 +442,8 @@ sample({
                         state: 'completed',
                         suggestedFileName: progress.suggestedFileName,
                         progress: 100 as const,
-                        resultData: progress.data,
+                        resultPath: progress.tempPath,
                         convertedSize: progress.fileSize,
-                        resultPath: progress.savedPath,
                     } satisfies FileWithMetadata;
                 }
 

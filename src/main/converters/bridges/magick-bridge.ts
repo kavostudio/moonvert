@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import { logDebug } from 'main/utils/debug-logger';
 import { MagickWorkerConversionRequest, MagickWorkerMessageZod } from 'main/workers/magick-worker/magick-worker.types';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import type { ImageFileFormat } from 'shared/types/conversion.types';
@@ -64,9 +64,7 @@ class MagickBridge {
             }
 
             await writeFile(targetPath, result.value);
-            const { stat } = await import('node:fs/promises');
             const fileSize = (await stat(targetPath)).size;
-            const data = await readFile(targetPath);
 
             onProgress({
                 fileId,
@@ -78,7 +76,6 @@ class MagickBridge {
             return {
                 success: true,
                 outputPath: targetPath,
-                data,
                 fileSize,
             };
         };

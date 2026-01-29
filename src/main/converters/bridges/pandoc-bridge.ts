@@ -3,7 +3,7 @@ import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import { logDebug } from 'main/utils/debug-logger';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { DocumentFileFormat, EbookFileFormat } from 'shared/types/conversion.types';
 import { createConversionProgress } from '../base/base-converter';
@@ -13,7 +13,7 @@ type ConversionOptions = BridgeConversionOptions<DocumentFileFormat | EbookFileF
 
 type ConversionResult = {
     success: boolean;
-} & ({ success: true; outputPath: string; data: Buffer; fileSize: number } | { success: false; error: string });
+} & ({ success: true; outputPath: string; fileSize: number } | { success: false; error: string });
 
 class PandocBridge {
     private readonly pandocPath: string;
@@ -140,7 +140,7 @@ class PandocBridge {
             pandocProcess.on('close', async (code) => {
                 if (code === 0) {
                     try {
-                        const data = await readFile(targetPath);
+                        const stats = await stat(targetPath);
 
                         onProgress(
                             createConversionProgress.processing({
@@ -153,8 +153,7 @@ class PandocBridge {
                         finalize({
                             success: true,
                             outputPath: targetPath,
-                            data,
-                            fileSize: data.length,
+                            fileSize: stats.size,
                         });
                     } catch (error) {
                         const message = error instanceof Error ? error.message : 'Unknown error';

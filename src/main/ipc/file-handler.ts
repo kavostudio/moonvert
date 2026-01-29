@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import { BrowserWindow, app, clipboard, dialog, ipcMain, shell } from 'electron';
-import { mkdir, writeFile } from 'fs/promises';
+import { copyFile, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { config } from 'shared/config/app-config';
 import {
@@ -160,7 +160,7 @@ export function registerFileHandlers(): void {
                     }
                 }
 
-                await writeFile(finalPath, file.data);
+                await copyFile(file.tempPath, finalPath);
                 savedPaths[file.fileId] = finalPath;
             }
 
@@ -204,7 +204,7 @@ export function registerFileHandlers(): void {
                     }
                 }
 
-                await writeFile(finalPath, file.data);
+                await copyFile(file.tempPath, finalPath);
                 filePaths.push(finalPath);
             }
 

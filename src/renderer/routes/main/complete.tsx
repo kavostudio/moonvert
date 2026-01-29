@@ -27,7 +27,7 @@ export function CompleteScreen() {
     const handleCopy = async () => {
         const filesToCopy = completedFiles.map((f) => ({
             fileId: f.id,
-            data: f.resultData,
+            tempPath: f.resultPath,
             suggestedFileName: f.suggestedFileName!,
         }));
 
@@ -52,10 +52,10 @@ export function CompleteScreen() {
 
     const handleSaveAs = async () => {
         const filesToSave = completedFiles
-            .filter((f) => f.resultData && f.suggestedFileName && f.state === 'completed')
+            .filter((f) => f.resultPath && f.suggestedFileName && f.state === 'completed')
             .map((f) => ({
                 fileId: f.id,
-                data: f.resultData,
+                tempPath: f.resultPath,
                 suggestedFileName: f.suggestedFileName!,
             }));
 

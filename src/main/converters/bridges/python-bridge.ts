@@ -227,10 +227,9 @@ export class PythonBridge {
             pythonProcess.on('close', async (code) => {
                 if (code === 0 && outputPath) {
                     try {
-                        const { readFile, stat } = await import('fs/promises');
+                        const { stat } = await import('fs/promises');
                         const stats = await stat(outputPath);
 
-                        let data: Buffer;
                         let fileSize: number;
                         let finalOutputPath = outputPath;
 
@@ -242,13 +241,11 @@ export class PythonBridge {
 
                             await zipDirectory(outputPath, zipPath);
 
-                            data = await readFile(zipPath);
                             const zipStats = await stat(zipPath);
                             fileSize = zipStats.size;
                             finalOutputPath = zipPath;
                         } else {
                             // Single file output
-                            data = await readFile(outputPath);
                             fileSize = stats.size;
                         }
 
@@ -256,7 +253,6 @@ export class PythonBridge {
                             success: true,
                             outputPath: finalOutputPath,
                             featuresCount,
-                            data,
                             fileSize,
                         });
                     } catch (error) {

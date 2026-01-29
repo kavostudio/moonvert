@@ -42,7 +42,7 @@ export type CancelAllConversionsResult = {
 export type SaveAllToFolderRequest = {
     files: Array<{
         fileId: string;
-        data: Buffer;
+        tempPath: string;
         suggestedFileName: string;
     }>;
 };
@@ -56,7 +56,7 @@ export type SaveAllToFolderResult = {
 export type CopyFilesToClipboardRequest = {
     files: Array<{
         fileId: string;
-        data: Buffer;
+        tempPath: string;
         suggestedFileName: string;
     }>;
 };

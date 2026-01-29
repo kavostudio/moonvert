@@ -1,4 +1,4 @@
-import { mkdir, readFile } from 'fs/promises';
+import { mkdir, stat } from 'fs/promises';
 import { logDebug } from 'main/utils/debug-logger';
 import { dirname } from 'path';
 import type { ConversionResult, ImageConversionOptions, ImageConversionRequest } from 'shared/types/conversion.types';
@@ -67,22 +67,13 @@ const convertWithMagick: ConverterFunction<ImageConversionRequest> = async (requ
         ...createConversionProgress.processing({
             fileId,
             progress: 75,
-            message: 'Reading result',
-        }),
-        onProgress,
-    });
-
-    const data = await withAbort(abortSignal, readFile(finalOutputPath));
-    const fileSize = data.length;
-
-    reportProgress({
-        ...createConversionProgress.processing({
-            fileId,
-            progress: 90,
             message: 'Finalizing conversion',
         }),
         onProgress,
     });
+
+    const stats = await withAbort(abortSignal, stat(finalOutputPath));
+    const fileSize = stats.size;
 
     const baseName =
         sourcePath
@@ -94,7 +85,6 @@ const convertWithMagick: ConverterFunction<ImageConversionRequest> = async (requ
     return {
         fileId,
         success: true,
-        data,
         suggestedFileName,
         fileSize,
         tempPath: finalOutputPath,
@@ -126,7 +116,7 @@ const convert: ConverterFunction<ImageConversionRequest> = async (request, onPro
                 fileId,
                 suggestedFileName: conversionResult.suggestedFileName,
                 fileSize: conversionResult.fileSize,
-                data: conversionResult.data,
+                tempPath: conversionResult.tempPath,
             }),
             onProgress,
         });

@@ -30,13 +30,13 @@ export const createConversionProgress = {
             status: 'processing',
             message: 'Starting conversion',
         }) satisfies ProcessingConversionProgress,
-    completed: (overrides: Pick<CompletedConversionProgress, 'fileId' | 'data' | 'suggestedFileName' | 'fileSize'>) =>
+    completed: (overrides: Pick<CompletedConversionProgress, 'fileId' | 'tempPath' | 'suggestedFileName' | 'fileSize'>) =>
         ({
             fileId: overrides.fileId,
             progress: 100,
             status: 'completed',
             message: 'Converted',
-            data: overrides.data,
+            tempPath: overrides.tempPath,
             suggestedFileName: overrides.suggestedFileName,
             fileSize: overrides.fileSize,
         }) satisfies CompletedConversionProgress,

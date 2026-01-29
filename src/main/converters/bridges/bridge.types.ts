@@ -12,6 +12,6 @@ export type BridgeConversionOptions<SourceFormat extends FileFormat, TargetForma
 
 export type BridgeConversionResult<SuccessFields extends object, ErrorFields extends object> = {
     success: boolean;
-} & (({ success: true; outputPath: string; data: Buffer; fileSize: number; featuresCount?: number } & SuccessFields) | ({ success: false; error: string } & ErrorFields));
+} & (({ success: true; outputPath: string; fileSize: number; featuresCount?: number } & SuccessFields) | ({ success: false; error: string } & ErrorFields));
 
 export type BridgeConversionFunction<Options extends BridgeConversionOptions<any, any>, Result extends BridgeConversionResult<any, any>> = (options: Options) => Promise<Result>;
