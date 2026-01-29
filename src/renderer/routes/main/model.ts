@@ -193,11 +193,19 @@ const setFileSaving = createEvent<{
     isSaving: boolean;
 }>();
 
+const requestNotificationPermission = async () => {
+    if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+    }
+};
+
 const cancelAllConversionsFx = createEffect(async () => {
     await window.App.conversion.cancelAllConversions();
 });
 
 const startConversionFx = createEffect(async () => {
+    void requestNotificationPermission();
+
     const state = $appState.getState();
 
     const filesToConvert = state.files.filter((f) => f.state !== 'idle' && f.path);
@@ -526,13 +534,28 @@ if (typeof window !== 'undefined' && window.App?.file?.onFileOpenedWith) {
     });
 }
 
-const $allFilesProcessed = createStore<boolean>(false).on([$appState.map((state) => state.files).updates], (state, files) => {
+const $allFilesProcessed = createStore<boolean>(false).on([$appState.map((state) => state.files).updates], (_, files) => {
     if (files.length === 0) return false;
-    console.log({
-        filesLeftToProcess: files.filter((file) => file.state !== 'completed' && file.state !== 'failed').length,
-    });
 
     return files.every((file) => file.state === 'completed' || file.state === 'failed');
+});
+
+sample({
+    source: $appState,
+    clock: $allFilesProcessed,
+    filter: (_, isProcessed) => isProcessed === true,
+    fn: (state) => {
+        const completed = state.files.filter((f) => f.state === 'completed').length;
+        const failed = state.files.filter((f) => f.state === 'failed').length;
+
+        // Only notify if app is in background
+        if (document.hidden && Notification.permission === 'granted') {
+            const title = failed > 0 ? 'Conversion Finished' : 'Conversion Complete';
+            const body = failed > 0 ? `${completed} converted, ${failed} failed` : `${completed} file${completed !== 1 ? 's' : ''} ready to save`;
+
+            new Notification(title, { body, silent: false });
+        }
+    },
 });
 
 export const $$main = {
