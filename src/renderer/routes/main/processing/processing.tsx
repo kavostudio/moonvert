@@ -127,7 +127,7 @@ export function ProcessingScreen() {
                         {displayingConvertingFiles.map((file) => {
                             return (
                                 <div key={file.id} className="text-muted-foreground-softer dark:text-muted-foreground-softer flex items-center gap-2 text-base">
-                                    <p className="w-28">{truncateFilename(file.name)}</p>
+                                    <p className="w-34">{truncateFilename(file.name)}</p>
                                     <p>{Math.floor(file.progress).toFixed(0)}%</p>
                                 </div>
                             );
