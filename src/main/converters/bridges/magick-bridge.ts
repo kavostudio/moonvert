@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { logDebug } from 'main/utils/debug-logger';
-import { MagickWorkerConversionRequest, MagickWorkerMessageZod } from 'main/workers/magick-worker/magick-worker.types';
+import { type MagickWorkerConversionRequest, MagickWorkerMessageZod } from 'main/workers/magick-worker/magick-worker.types';
 import { readFile, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Worker } from 'node:worker_threads';
