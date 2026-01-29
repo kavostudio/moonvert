@@ -139,6 +139,10 @@ export function registerFileHandlers(): void {
             });
 
             if (result.canceled || result.filePaths.length === 0) {
+                return {
+                    success: false,
+                    error: 'No destination folder selected',
+                };
             }
 
             const destFolder = result.filePaths[0];
