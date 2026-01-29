@@ -204,7 +204,8 @@ class FfmpegBridge {
 
         const useHardwareAccel = process.platform === 'darwin' && preset.hwAccel;
 
-        args.push('-map', '0');
+        // Only map video and audio streams, ignore data/metadata streams
+        args.push('-map', '0:v', '-map', '0:a?');
 
         if (useHardwareAccel && preset.hwAccel) {
             args.push('-c:v', preset.hwAccel.videoCodec, '-b:v', preset.hwAccel.bitrate);
