@@ -1,4 +1,4 @@
-import { CircleQuestionMark, Globe, Heart, Info } from 'lucide-react';
+import { CircleQuestionMark, Globe, Heart, Info, Scale } from 'lucide-react';
 import logoPng from 'renderer/assets/logo.png';
 import { Button } from 'renderer/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from 'renderer/components/ui/dialog';
@@ -25,6 +25,12 @@ const infoLinks = [
         label: 'GitHub',
         href: config.links.github.repository,
         icon: GithubIcon,
+    },
+    {
+        key: 'credits',
+        label: 'Credits',
+        href: config.links.credits,
+        icon: Scale,
     },
 ] as const;
 

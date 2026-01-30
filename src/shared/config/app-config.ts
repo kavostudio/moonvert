@@ -25,5 +25,6 @@ export const config = {
         website: `https://moonvert.app/?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
         donate: `https://moonvert.app/donate?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
         contact: `https://moonvert.app/contact?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
+        credits: 'https://github.com/kavostudio/moonvert/blob/main/THIRD_PARTY_LICENSES.md',
     },
 };
