@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { toast } from 'sonner';
 import {
     DOCUMENT_FORMATS,
     EBOOK_FORMATS,
@@ -193,19 +194,11 @@ const setFileSaving = createEvent<{
     isSaving: boolean;
 }>();
 
-const requestNotificationPermission = async () => {
-    if (Notification.permission === 'default') {
-        await Notification.requestPermission();
-    }
-};
-
 const cancelAllConversionsFx = createEffect(async () => {
     await window.App.conversion.cancelAllConversions();
 });
 
 const startConversionFx = createEffect(async () => {
-    void requestNotificationPermission();
-
     const state = $appState.getState();
 
     const filesToConvert = state.files.filter((f) => f.state !== 'idle' && f.path);
@@ -548,12 +541,13 @@ sample({
         const completed = state.files.filter((f) => f.state === 'completed').length;
         const failed = state.files.filter((f) => f.state === 'failed').length;
 
-        // Only notify if app is in background
-        if (document.hidden && Notification.permission === 'granted') {
-            const title = failed > 0 ? 'Conversion Finished' : 'Conversion Complete';
-            const body = failed > 0 ? `${completed} converted, ${failed} failed` : `${completed} file${completed !== 1 ? 's' : ''} ready to save`;
+        const title = failed > 0 ? 'Conversion Finished' : 'Conversion Complete';
+        // const description = failed > 0 ? `${completed} converted, ${failed} failed` : `${completed} file${completed !== 1 ? 's' : ''} ready to save`;
 
-            new Notification(title, { body, silent: false });
+        if (failed > 0) {
+            toast.error(title, {});
+        } else {
+            toast.success(title, {});
         }
     },
 });

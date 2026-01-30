@@ -6,6 +6,7 @@ import { ScreenWrapper } from 'renderer/components/screen-wrapper';
 import { DecorativeBackground } from 'renderer/components/decorative-background';
 import { Button } from 'renderer/components/ui/button';
 import { ConversionErrorsDialog } from 'renderer/components/conversion-errors-dialog';
+import { toast } from 'sonner';
 
 function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
@@ -34,6 +35,7 @@ export function CompleteScreen() {
         if (filesToCopy.length === 0) return;
 
         const result = await window.App.file.copyToClipboard(filesToCopy);
+        toast.success('Copied to clipboard', {});
 
         if (result.success) {
         } else {

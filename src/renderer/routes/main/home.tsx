@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
-import { FilePlus, FileSearchCorner, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { DecorativeBackground } from 'renderer/components/decorative-background';
 import { ScreenWrapper } from 'renderer/components/screen-wrapper';
 import { Button } from 'renderer/components/ui/button';
 import { $$theme } from 'renderer/entities/theme/model';
+import { toast } from 'sonner';
 import { toFileWithMetadata } from './file-utils';
 import { $$main, type FileWithMetadata } from './model';
 
@@ -145,7 +146,20 @@ export function HomeScreen() {
             }
 
             if (droppedFiles.length > 0) {
-                const filesWithMetadata = droppedFiles.map(toFileWithMetadata).filter((f): f is FileWithMetadata => f !== null);
+                const conversionResults = droppedFiles.map((file) => ({
+                    file,
+                    converted: toFileWithMetadata(file),
+                }));
+                const filesWithMetadata = conversionResults.map((result) => result.converted).filter((file): file is FileWithMetadata => file !== null);
+                const rejectedFiles = conversionResults.filter((result) => !result.converted).map((result) => result.file.name);
+
+                if (rejectedFiles.length > 0) {
+                    const preview = rejectedFiles.slice(0, 3).join(', ');
+                    const suffix = rejectedFiles.length > 3 ? '…' : '';
+                    toast.error('File type not supported', {
+                        description: `${preview}${suffix}`,
+                    });
+                }
 
                 if (filesWithMetadata.length > 0) {
                     $$main.addFiles(filesWithMetadata);
@@ -164,7 +178,20 @@ export function HomeScreen() {
     const handleUploadClick = async () => {
         const result = await window.App.file.selectFiles();
         if (!result.canceled && result.files.length > 0) {
-            const filesWithMetadata = result.files.map(toFileWithMetadata).filter((f): f is FileWithMetadata => f !== null);
+            const conversionResults = result.files.map((file) => ({
+                file,
+                converted: toFileWithMetadata(file),
+            }));
+            const filesWithMetadata = conversionResults.map((item) => item.converted).filter((file): file is FileWithMetadata => file !== null);
+            const rejectedFiles = conversionResults.filter((item) => !item.converted).map((item) => item.file.name);
+
+            if (rejectedFiles.length > 0) {
+                const preview = rejectedFiles.slice(0, 3).join(', ');
+                const suffix = rejectedFiles.length > 3 ? '…' : '';
+                toast.error('File type not supported', {
+                    description: `${preview}${suffix}`,
+                });
+            }
 
             if (filesWithMetadata.length > 0) {
                 $$main.addFiles(filesWithMetadata);
