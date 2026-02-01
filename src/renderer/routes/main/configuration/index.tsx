@@ -15,12 +15,15 @@ import { getScreenDimensions, Screens } from '../utils';
 import { canConvertFileToFormat, getAvailableTargetFormats, getGroupDisplayName } from './helpers';
 import { $$configuration } from './model';
 import { SummaryScreenContent, SummaryScreenFooter } from './summary';
+import { $$license } from 'renderer/entities/license/model';
 
 export function ConfigurationScreen() {
     const { steps, currentStepIndex, selectedTargetFormats } = useUnit($$configuration.$configState);
     const groupedFiles = useUnit($$configuration.$groupedFiles);
     const initialized = useUnit($$configuration.$initialized);
     const canProceed = useUnit($$configuration.$canProceedToNextStep);
+
+    const licenseState = useUnit($$license.$licenseState);
 
     useEffect(() => {
         $$configuration.initialize();
@@ -33,9 +36,18 @@ export function ConfigurationScreen() {
     const isOnSummary = initialized && currentStepIndex === steps.length;
     const isSingleStep = steps.length === 1;
 
-    // Cmd+Enter hotkey to proceed
     const handleProceed = useCallback(() => {
         if (!canProceed && !isOnSummary) return;
+
+        if (!licenseState) return;
+
+        if (licenseState.status === 'trial') {
+            const remainingConversions = licenseState.conversionsRemaining ?? 0;
+            if (remainingConversions <= 0) {
+                $$license.setLicenseDialogOpen(true);
+                return;
+            }
+        }
 
         if (isOnSummary || (currentStepIndex === 0 && isSingleStep)) {
             $$main.startConversion();
@@ -43,7 +55,7 @@ export function ConfigurationScreen() {
         } else {
             $$configuration.nextStep();
         }
-    }, [canProceed, isOnSummary, currentStepIndex, isSingleStep]);
+    }, [canProceed, isOnSummary, currentStepIndex, isSingleStep, licenseState]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -153,22 +165,9 @@ export function ConfigurationScreen() {
                             Back
                         </Button>
                     )}
-                    {currentStepIndex === 0 && steps.length === 1 ? (
-                        <Button
-                            disabled={!canProceed}
-                            onClick={() => {
-                                $$main.startConversion();
-                                $$main.navigateTo($$main.Screens.Processing);
-                            }}
-                            variant="default"
-                        >
-                            Convert
-                        </Button>
-                    ) : (
-                        <Button disabled={!canProceed} onClick={() => $$configuration.nextStep()} variant="default">
-                            Continue
-                        </Button>
-                    )}
+                    <Button disabled={!canProceed} onClick={handleProceed} variant="default">
+                        {currentStepIndex === steps.length - 1 ? 'Convert' : 'Continue'}
+                    </Button>
                 </div>
             )}
         </ScreenWrapper>

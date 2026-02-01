@@ -7,6 +7,7 @@ import { getConverter } from '../converters';
 import { conversionManager } from 'main/converters/conversion-manager';
 import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import { createConversionProgress } from 'main/converters/base/base-converter';
+import { licenseService } from 'main/services/license-service';
 
 function sendBatchProgress(window: BrowserWindow | undefined, progress: BatchConversionProgress) {
     if (window && !window.isDestroyed()) {
@@ -17,6 +18,27 @@ function sendBatchProgress(window: BrowserWindow | undefined, progress: BatchCon
 export function registerConversionHandlers(window?: BrowserWindow): void {
     ipcMain.handle(IPCChannels.conversion.convertBatch, async (_, request: IPCRequest<'conversion:convert-batch'>): Promise<IPCResponse<'conversion:convert-batch'>> => {
         const { conversions } = request;
+
+        const licenseCheck = await licenseService.canConvert();
+
+        if (!licenseCheck.allowed) {
+            conversions.forEach((conv, index) => {
+                sendBatchProgress(window, {
+                    total: conversions.length,
+                    completed: 0,
+                    failed: index + 1,
+                    current: createConversionProgress.failed({
+                        fileId: conv.fileId,
+                        error: licenseCheck.reason || 'License required',
+                    }),
+                });
+            });
+            return conversions.map((conv) => ({
+                fileId: conv.fileId,
+                success: false,
+                error: licenseCheck.reason || 'License required',
+            }));
+        }
 
         conversionManager.allowConversions(true);
 
@@ -42,11 +64,6 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
                     if (conversionManager.conversionAllowed() === false) {
                         const errorMsg = 'No longer accepting new conversions';
-                        const errorResult: ConversionResult = {
-                            fileId,
-                            success: false,
-                            error: errorMsg,
-                        };
 
                         batchProgress.failed++;
 
@@ -57,7 +74,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
                         sendBatchProgress(window, batchProgress);
 
-                        return errorResult;
+                        return {
+                            fileId,
+                            success: false,
+                            error: errorMsg,
+                        } satisfies ConversionResult;
                     }
 
                     const abortController = conversionManager.register(fileId);
@@ -116,11 +137,6 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
                         if (abortController.signal.aborted) {
                             const errorMessage = getAbortErrorMessage(abortController.signal);
-                            const canceledResult: ConversionResult = {
-                                fileId,
-                                success: false,
-                                error: errorMessage,
-                            };
 
                             batchProgress.failed++;
                             batchProgress.current = {
@@ -130,7 +146,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
                                 error: errorMessage,
                             };
                             sendBatchProgress(window, batchProgress);
-                            return canceledResult;
+                            return {
+                                fileId,
+                                success: false,
+                                error: errorMessage,
+                            } satisfies ConversionResult;
                         }
 
                         if (result.success) {
@@ -143,14 +163,11 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
 
                         return result;
                     } catch (error) {
-                        const isAborted = abortController.signal.aborted;
-                        const errorMessage = isAborted ? getAbortErrorMessage(abortController.signal) : error instanceof Error ? error.message : 'Conversion error';
-
-                        const errorResult: ConversionResult = {
-                            fileId,
-                            success: false,
-                            error: errorMessage,
-                        };
+                        const errorMessage = abortController.signal.aborted
+                            ? getAbortErrorMessage(abortController.signal)
+                            : error instanceof Error
+                              ? error.message
+                              : 'Conversion error';
 
                         batchProgress.failed++;
                         batchProgress.current = {
@@ -161,13 +178,21 @@ export function registerConversionHandlers(window?: BrowserWindow): void {
                         };
                         sendBatchProgress(window, batchProgress);
 
-                        return errorResult;
+                        return {
+                            fileId,
+                            success: false,
+                            error: errorMessage,
+                        } satisfies ConversionResult;
                     } finally {
                         conversionManager.unregister(fileId);
                     }
                 }),
             ),
         );
+
+        if (batchProgress.completed >= 1) {
+            licenseService.incrementConversion();
+        }
 
         return results;
     });

@@ -32,6 +32,9 @@
     --destructive: hsla(2, 100%, 90%, 0.85);
     --popover-destructive: hsla(3, 100%, 61%, 1);
 
+    --success: hsla(120, 67%, 16%, 1);
+    --popover-success: hsla(120, 51%, 71%, 1);
+
     --border: hsla(0, 0%, 90%, 1);
     --border-accent: hsla(0, 0%, 100%, 1);
     --border-muted: hsla(0, 0%, 90%, 1);
@@ -66,6 +69,9 @@
     --destructive: hsla(352, 61%, 26%, 1);
     --popover-destructive: hsla(3, 100%, 61%, 1);
 
+    --success: hsla(120, 67%, 16%, 1);
+    --popover-success: hsla(120, 51%, 71%, 1);
+
     --border: hsla(0, 0%, 0%, 1);
     --border-accent: hsla(240, 20%, 80%, 1);
     --border-muted: hsla(0, 0%, 23%, 1);
@@ -91,6 +97,8 @@
     --color-accent-secondary-foreground: var(--accent-secondary-foreground);
     --color-destructive: var(--destructive);
     --color-popover-destructive: var(--popover-destructive);
+    --color-success: var(--success);
+    --color-popover-success: var(--popover-success);
     --color-border: var(--border);
     --color-border-accent: var(--border-accent);
     --color-border-muted: var(--border-muted);

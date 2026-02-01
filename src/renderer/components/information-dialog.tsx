@@ -1,9 +1,13 @@
-import { CircleQuestionMark, Globe, Heart, Info, Scale } from 'lucide-react';
+import { useUnit } from 'effector-react';
+import { Copy, Globe, Headset, Scale, Settings } from 'lucide-react';
 import logoPng from 'renderer/assets/logo.png';
+import { Badge } from 'renderer/components/ui/badge';
 import { Button } from 'renderer/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from 'renderer/components/ui/dialog';
+import { $$license } from 'renderer/entities/license/model';
 import { cn } from 'renderer/lib/utils';
 import { config } from 'shared/config/app-config';
+import { TRIAL_CONVERSION_LIMIT, type LicenseState } from 'shared/types/license.types';
 import { GithubIcon } from './icons/icons';
 import { Logo } from './logo';
 
@@ -15,10 +19,10 @@ const infoLinks = [
         icon: Globe,
     },
     {
-        key: 'donate',
-        label: 'Donate',
-        href: config.links.donate,
-        icon: Heart,
+        key: 'support',
+        label: 'Support',
+        href: config.links.contact,
+        icon: Headset,
     },
     {
         key: 'github',
@@ -34,21 +38,112 @@ const infoLinks = [
     },
 ] as const;
 
-type InformationDialogProps = {
-    className?: string;
-};
-
 function openExternalLink(url: string) {
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+type LicenseSectionProps = {
+    licenseState: LicenseState | null;
+    licenseKey?: string;
+};
+
+function LicenseSection({ licenseState, licenseKey }: LicenseSectionProps) {
+    if (!licenseState) {
+        return null;
+    }
+
+    const handleCopyKey = async () => {
+        if (!licenseKey) return;
+        await navigator.clipboard.writeText(licenseKey);
+    };
+
+    if (licenseState.status === 'active') {
+        return (
+            <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5">
+                    <p className="text-popover text-base font-medium">License</p>
+                    <Badge variant={'success'}>Active</Badge>
+                </div>
+                {licenseKey && (
+                    <div className="flex items-center gap-2.5">
+                        <div className="bg-muted/20 flex items-center gap-2 rounded-md px-3 py-2">
+                            <code className="text-popover font-mono text-sm">{licenseKey}</code>
+                            <Button variant="icon-ghost" size="icon" className="size-6 shrink-0" onClick={handleCopyKey}>
+                                <Copy className="size-3.5" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (licenseState.status === 'trial') {
+        return (
+            <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5">
+                    <p className="text-popover text-base font-medium">License</p>
+                    <Badge variant="default">{TRIAL_CONVERSION_LIMIT}-convert Trial</Badge>
+                </div>
+                <p className="text-muted text-base">
+                    You have {licenseState.conversionsRemaining} conversion{licenseState.conversionsRemaining !== 1 ? 's' : ''} left in your trial
+                </p>
+            </div>
+        );
+    }
+
+    if (licenseState.status === 'revoked') {
+        return (
+            <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5">
+                    <p className="text-popover text-base font-medium">License</p>
+                    <Badge variant="destructive">Revoked</Badge>
+                </div>
+                {licenseKey && (
+                    <div className="flex items-center gap-2.5">
+                        <div className="bg-muted/20 flex items-center gap-2.5 rounded-md px-3 py-2">
+                            <code className="text-muted font-mono text-sm line-through">{licenseKey}</code>
+                            <Button variant="icon-ghost" size="icon" className="size-6 shrink-0" onClick={handleCopyKey}>
+                                <Copy className="size-3.5" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                <a
+                    className="text-popover text-base underline underline-offset-2"
+                    href={config.links.contact}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        openExternalLink(config.links.contact);
+                    }}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    tabIndex={-1}
+                >
+                    Contact support for more information
+                </a>
+            </div>
+        );
+    }
+
+    return null;
+}
+
+type InformationDialogProps = {
+    className?: string;
+};
+
 export function InformationDialog({ className }: InformationDialogProps) {
+    const licenseState = useUnit($$license.$licenseState);
+
+    const licenseKey = licenseState?.status === 'active' || licenseState?.status === 'revoked' ? licenseState.licenseKey : undefined;
+
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button aria-label="Open information" className={cn('', className)} size="icon" variant="icon">
-                    <CircleQuestionMark className="size-5 stroke-[2.8px]" />
+                    <Settings className="size-5 stroke-[1.8px]" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="max- h-full max-h-[374px] w-full justify-between gap-0 p-0" showCloseButton={false}>
@@ -62,30 +157,12 @@ export function InformationDialog({ className }: InformationDialogProps) {
                                 <Logo className="fill-popover-foreground" />
                             </DialogTitle>
                             <DialogDescription className="text-muted-softer text-base leading-none">
-                                Version: v{config.version.number} {config.version.codename}
+                                Version: {config.version.codename} {config.version.number}
                             </DialogDescription>
                         </div>
                     </div>
                     <div className="flex flex-1 flex-col items-start justify-between">
-                        <div className="mt-5 flex flex-col gap-1">
-                            <p className="text-muted text-sm">Support</p>
-                            <p className="text-popover text-base">
-                                Need help or found a bug?{' '}
-                                <a
-                                    className="text-popover underline underline-offset-2"
-                                    href={config.links.contact}
-                                    onClick={(event) => {
-                                        event.preventDefault();
-                                        openExternalLink(config.links.contact);
-                                    }}
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                    tabIndex={-1}
-                                >
-                                    Contact us
-                                </a>
-                            </p>
-                        </div>
+                        <LicenseSection licenseState={licenseState} licenseKey={licenseKey} />
 
                         <div className="flex flex-col gap-2">
                             <Button

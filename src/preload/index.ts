@@ -3,6 +3,8 @@ import { conversionAPI } from './conversion';
 import type { ConversionAPI } from './conversion';
 import { fileAPI } from './file';
 import type { FileAPI } from './file';
+import { licenseAPI } from './license';
+import type { LicenseAPI } from './license';
 import { themeAPI } from './theme';
 import { windowAPI } from './window';
 
@@ -16,6 +18,7 @@ const API = {
     username: process.env.USER,
     conversion: conversionAPI,
     file: fileAPI,
+    license: licenseAPI,
     theme: themeAPI,
     window: windowAPI,
 };
@@ -24,4 +27,4 @@ contextBridge.exposeInMainWorld('App', API);
 
 export type ThemeAPI = typeof themeAPI;
 export type WindowAPI = typeof windowAPI;
-export type { ConversionAPI, FileAPI };
+export type { ConversionAPI, FileAPI, LicenseAPI };

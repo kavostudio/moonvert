@@ -13,6 +13,7 @@ import { registerConversionHandlers } from './ipc/conversion-handler';
 import { registerFileHandlers } from './ipc/file-handler';
 import { setupThemeHandler } from './ipc/theme-handler';
 import { registerWindowHandlers } from './ipc/window-handler';
+import { registerLicenseHandlers } from './ipc/license-handler';
 import { conversionManager } from './converters/conversion-manager';
 import { cleanupTempFiles } from './utils/cleanup';
 import { getDebugLogPath, isDebugEnabled, logDebug } from './utils/debug-logger';
@@ -240,6 +241,7 @@ makeAppWithSingleInstanceLock(async () => {
             registerFileHandlers();
             setupThemeHandler();
             registerWindowHandlers();
+            registerLicenseHandlers();
             handlersRegistered = true;
         }
 

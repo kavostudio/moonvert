@@ -1,4 +1,5 @@
 import type { BatchConversionProgress, BatchConversionRequest, ConversionRequest, ConversionResult } from '../types/conversion.types';
+import type { LicenseState, ActivateLicenseRequest, ActivateLicenseResult, CanConvertResult } from '../types/license.types';
 
 export type SelectedFile = {
     path: string;
@@ -140,6 +141,27 @@ export type IPCChannelMap = {
         request: void;
         response: OpenDebugLogResult;
     };
+
+    'license:get-state': {
+        request: void;
+        response: LicenseState;
+    };
+    'license:activate': {
+        request: ActivateLicenseRequest;
+        response: ActivateLicenseResult;
+    };
+    'license:can-convert': {
+        request: void;
+        response: CanConvertResult;
+    };
+    'license:reset-for-testing': {
+        request: void;
+        response: void;
+    };
+    'license:get-debug-info': {
+        request: void;
+        response: Record<string, unknown> | null;
+    };
 };
 
 export type IPCEventMap = {
@@ -149,6 +171,7 @@ export type IPCEventMap = {
         files: SelectedFile[];
         timestamp: number;
     };
+    'license:state-changed': LicenseState;
 };
 
 export type IPCChannel = keyof IPCChannelMap;
@@ -185,6 +208,14 @@ export const IPCChannels = {
         getSize: 'window:get-size',
         openDebugLog: 'window:open-debug-log',
     },
+
+    license: {
+        getState: 'license:get-state',
+        activate: 'license:activate',
+        canConvert: 'license:can-convert',
+        resetForTesting: 'license:reset-for-testing',
+        getDebugInfo: 'license:get-debug-info',
+    },
 } as const satisfies Record<string, Record<string, IPCChannel>>;
 
 export const IPCEvents = {
@@ -196,5 +227,8 @@ export const IPCEvents = {
     },
     files: {
         openedWith: 'file:opened-with',
+    },
+    license: {
+        stateChanged: 'license:state-changed',
     },
 } as const satisfies Record<string, Record<string, IPCEvent>>;
