@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { app } from 'electron';
-import { basename, join } from 'path';
+import { mkdir } from 'fs/promises';
+import { basename, dirname, join } from 'path';
 import { config } from 'shared/config/app-config';
 import type {
     CompletedConversionProgress,
@@ -12,22 +13,32 @@ import type {
     ProcessingConversionProgress,
 } from 'shared/types/conversion.types';
 
-export function generateOutputPath(sourcePath: string, targetFormat: FileFormat): string {
-    const sourceFileName = basename(sourcePath);
-    const fileNameWithoutExt = sourceFileName.replace(/\.[^/.]+$/, '');
+function generateOutputPath(sourcePath: string, targetFormat: FileFormat): string {
+    const fileNameWithoutExt = basename(sourcePath).replace(/\.[^/.]+$/, '');
     const uniqueId = randomBytes(8).toString('hex');
     const outputFileName = `${fileNameWithoutExt}-${uniqueId}.${targetFormat}`;
 
     return join(app.getPath('temp'), config.tempFolders.fileDropsTempFolder, outputFileName);
 }
 
-export const createConversionProgress = {
+export function generateSuggestedFileName(sourcePath: string, targetFormat: FileFormat): string {
+    const fileNameWithoutExt = basename(sourcePath).replace(/\.[^/.]+$/, '');
+    return `${fileNameWithoutExt}.${targetFormat}`;
+}
+
+export async function prepareOutputPath(sourcePath: string, targetFormat: FileFormat): Promise<string> {
+    const outputPath = generateOutputPath(sourcePath, targetFormat);
+    await mkdir(dirname(outputPath), { recursive: true });
+    return outputPath;
+}
+
+const createConversionProgress = {
     processing: (overrides: Pick<ProcessingConversionProgress, 'fileId'> & Partial<Pick<ProcessingConversionProgress, 'progress' | 'message'>>) =>
         ({
             fileId: overrides.fileId,
             progress: overrides?.progress ?? 0,
             status: 'processing',
-            message: 'Starting conversion',
+            message: overrides?.message ?? 'Converting...',
         }) satisfies ProcessingConversionProgress,
     completed: (overrides: Pick<CompletedConversionProgress, 'fileId' | 'tempPath' | 'suggestedFileName' | 'fileSize'>) =>
         ({
@@ -48,15 +59,24 @@ export const createConversionProgress = {
         }) satisfies FailedConversionProgress,
 } as const;
 
-export function reportProgress({
-    onProgress,
-    ...progress
-}: ConversionProgress & {
-    onProgress: (progress: ConversionProgress) => void;
-}): void {
-    onProgress({
-        ...progress,
-    });
+type ProgressReporter = {
+    failed(error: string): void;
+    processing: (progress: number, message?: string) => void;
+    complete(params: { tempPath: string; suggestedFileName: string; fileSize: number }): void;
+};
+
+export function createProgressReporter(onProgress: (progress: ConversionProgress) => void, fileId: string): ProgressReporter {
+    return {
+        failed: (error) => {
+            onProgress(createConversionProgress.failed({ fileId, error }));
+        },
+        processing: (progress, message) => {
+            onProgress(createConversionProgress.processing({ fileId, progress, message }));
+        },
+        complete: ({ tempPath, suggestedFileName, fileSize }) => {
+            onProgress(createConversionProgress.completed({ fileId, tempPath, suggestedFileName, fileSize }));
+        },
+    };
 }
 
 export type ConverterFunction<T extends ConversionRequest> = (
