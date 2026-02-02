@@ -67,7 +67,7 @@ function LicenseSection({ licenseState, licenseKey }: LicenseSectionProps) {
                 </div>
                 {licenseKey && (
                     <div className="flex items-center gap-2.5">
-                        <div className="bg-muted/20 flex items-center gap-2 rounded-md px-3 py-2">
+                        <div className="bg-muted-softer/30 flex items-center gap-2 rounded-md px-3 py-2">
                             <code className="text-popover font-mono text-sm">{licenseKey}</code>
                             <Button variant="icon-ghost" size="icon" className="size-6 shrink-0" onClick={handleCopyKey}>
                                 <Copy className="size-3.5" />

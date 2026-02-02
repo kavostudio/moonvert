@@ -36,8 +36,8 @@
     --destructive: hsla(2, 100%, 90%, 0.85);
     --popover-destructive: hsla(3, 100%, 61%, 1);
 
-    --success: hsla(120, 67%, 16%, 1);
-    --popover-success: hsla(120, 51%, 71%, 1);
+    --success: hsla(120, 39%, 90%, 1);
+    --popover-success: hsla(120, 50%, 35%, 1);
 
     --border: hsla(0, 0%, 90%, 1);
     --border-accent: hsla(0, 0%, 100%, 1);
