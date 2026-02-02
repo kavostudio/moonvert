@@ -32,7 +32,7 @@ export async function prepareOutputPath(sourcePath: string, targetFormat: FileFo
     return outputPath;
 }
 
-const createConversionProgress = {
+export const createConversionProgress = {
     processing: (overrides: Pick<ProcessingConversionProgress, 'fileId'> & Partial<Pick<ProcessingConversionProgress, 'progress' | 'message'>>) =>
         ({
             fileId: overrides.fileId,
