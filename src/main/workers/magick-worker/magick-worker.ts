@@ -2,6 +2,8 @@ import { parentPort } from 'node:worker_threads';
 import { ImageMagick, initializeImageMagick, MagickFormat } from '@imagemagick/magick-wasm';
 import { readFileSync } from 'node:fs';
 import type { MagickWorkerConversionRequest, MagickWorkerConversionResponse } from './magick-worker.types';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
 let initialized = false;
 
@@ -29,9 +31,9 @@ async function convertImage(request: MagickWorkerConversionRequest): Promise<Mag
     try {
         await ensureInitialized();
 
-        const { id, inputBuffer, targetFormat, quality } = request;
+        const { id, inputBuffer, targetFormat, quality, outputPath } = request;
 
-        let outputBuffer: Uint8Array<ArrayBufferLike> | undefined;
+        let outputBuffer: Uint8Array | undefined;
 
         ImageMagick.read(inputBuffer, (image) => {
             image.quality = quality ?? 100;
@@ -44,11 +46,13 @@ async function convertImage(request: MagickWorkerConversionRequest): Promise<Mag
             throw new Error('Conversion produced no output');
         }
 
+        await mkdir(dirname(outputPath), { recursive: true });
+        await writeFile(outputPath, outputBuffer);
+
         return {
             id,
             success: true,
-            // For some reason TypeScript infers this incorrectly. TODO: investigate and fix
-            outputBuffer: outputBuffer as any,
+            outputPath,
         };
     } catch (error) {
         return {

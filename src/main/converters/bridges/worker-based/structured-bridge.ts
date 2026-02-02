@@ -1,13 +1,13 @@
 import { app } from 'electron';
-import { logDebug } from 'main/utils/debug-logger';
 import { abortable } from 'main/utils/abortable';
+import { logDebug } from 'main/utils/debug-logger';
 import { type StructuredWorkerConversionRequest, StructuredWorkerMessageZod } from 'main/workers/structured-worker/structured-worker.types';
-import { mkdir, readFile, writeFile, stat } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import type { StructuredFileFormat } from 'shared/types/conversion.types';
-import type { BridgeConversionOptions, BridgeConversionResult } from './bridge.types';
-import { createConversionProgress } from '../base/base-converter';
+import { createProgressReporter } from '../../base/base-converter';
+import type { BridgeConversionOptions, BridgeConversionResult } from '../bridge.types';
 
 type ConversionOptions = BridgeConversionOptions<StructuredFileFormat, StructuredFileFormat, {}>;
 type ConversionResult = BridgeConversionResult<{}, {}>;
@@ -19,10 +19,10 @@ function getWorkerPath(): string {
     return isDev ? join(appPath, 'node_modules/.dev/main/workers/structured-worker.mjs') : join(appPath, 'main/workers/structured-worker.mjs');
 }
 
-interface WorkerConversionParams {
+type WorkerConversionParams = {
     worker: Worker;
     request: StructuredWorkerConversionRequest;
-}
+};
 
 function runWorkerConversion({ worker, request }: WorkerConversionParams): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -52,33 +52,6 @@ function runWorkerConversion({ worker, request }: WorkerConversionParams): Promi
 
         worker.postMessage(request);
     });
-}
-
-interface ProgressReporter {
-    failed(error: string): void;
-    complete(): void;
-}
-
-function createProgressReporter(onProgress: ConversionOptions['onProgress'], fileId: string): ProgressReporter {
-    return {
-        failed: (error) => {
-            onProgress(
-                createConversionProgress.failed({
-                    fileId,
-                    error: error,
-                }),
-            );
-        },
-        complete: () => {
-            onProgress(
-                createConversionProgress.processing({
-                    fileId,
-                    progress: 100,
-                    message: 'Conversion complete',
-                }),
-            );
-        },
-    };
 }
 
 async function convert(options: ConversionOptions): Promise<ConversionResult> {
@@ -119,8 +92,6 @@ async function convert(options: ConversionOptions): Promise<ConversionResult> {
         progress.failed(errorMessage);
         return { success: false, error: errorMessage };
     }
-
-    progress.complete();
 
     return { success: true, outputPath: targetPath, fileSize: fileStat.size };
 }

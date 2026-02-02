@@ -6,13 +6,14 @@ export type MagickWorkerConversionRequest = {
     sourceFormat: string;
     targetFormat: string;
     quality?: number;
+    outputPath: string;
 };
 
 export const MagickWorkerMessageZod = z.union([
     z.object({
         id: z.string(),
         success: z.literal(true),
-        outputBuffer: z.instanceof(Uint8Array),
+        outputPath: z.string(),
     }),
     z.object({
         id: z.string(),

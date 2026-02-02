@@ -50,7 +50,6 @@ export type GenericConversionRequest<T extends object, F extends FileFormat> = {
     sourcePath: string;
     sourceFormat: F;
     targetFormat: F;
-    outputPath?: string;
 } & T;
 
 export type ImageConversionRequest = GenericConversionRequest<

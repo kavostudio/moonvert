@@ -1,43 +1,27 @@
-import { mkdir } from 'fs/promises';
-import { dirname, basename } from 'node:path';
 import { logDebug } from 'main/utils/debug-logger';
-import { getAbortErrorMessage } from 'main/utils/abort-utils';
 import type { VideoConversionRequest } from 'shared/types/conversion.types';
-import { type ConverterFunction, createConversionProgress, generateOutputPath, reportProgress } from '../base/base-converter';
-import { $$ffmpegBridge } from 'main/converters/bridges/ffmpeg-bridge';
+import { type ConverterFunction, createProgressReporter, generateSuggestedFileName, prepareOutputPath } from '../base/base-converter';
+import { $$ffmpegBridge } from 'main/converters/bridges/process-based/ffmpeg/ffmpeg-bridge';
 
 const convert: ConverterFunction<VideoConversionRequest> = async (request, onProgress, abortSignal) => {
-    const { fileId, sourcePath, sourceFormat, targetFormat, outputPath } = request;
+    const { fileId, sourcePath, sourceFormat, targetFormat } = request;
+    const progress = createProgressReporter(onProgress, fileId);
 
     if (abortSignal.aborted) {
-        const errorMsg = getAbortErrorMessage(abortSignal);
-        reportProgress({
-            ...createConversionProgress.failed({ fileId, error: errorMsg }),
-            onProgress,
-        });
+        const errorMsg = abortSignal.reason?.message ?? 'Conversion aborted';
+        progress.failed(errorMsg);
         return { fileId, success: false, error: errorMsg };
     }
 
-    void logDebug('Video conversion starting', {
-        fileId,
-        sourcePath,
-        sourceFormat,
-        targetFormat,
-        outputPath,
-    });
+    void logDebug('Video conversion starting', { fileId, sourcePath, sourceFormat, targetFormat });
 
-    reportProgress({
-        ...createConversionProgress.processing({ fileId }),
-        onProgress,
-    });
+    progress.processing(0, 'Starting video conversion...');
 
-    const finalOutputPath = outputPath || generateOutputPath(sourcePath, targetFormat);
-    const outputDir = dirname(finalOutputPath);
-    await mkdir(outputDir, { recursive: true });
+    const outputPath = await prepareOutputPath(sourcePath, targetFormat);
 
     const result = await $$ffmpegBridge.convert({
         sourcePath,
-        targetPath: finalOutputPath,
+        targetPath: outputPath,
         sourceFormat,
         targetFormat,
         onProgress,
@@ -47,42 +31,23 @@ const convert: ConverterFunction<VideoConversionRequest> = async (request, onPro
 
     if (!result.success) {
         const errorMsg = result.error || 'Conversion failed';
-        void logDebug('Video conversion failed', {
-            fileId,
-            sourcePath,
-            sourceFormat,
-            targetFormat,
-            error: errorMsg,
-        });
-        reportProgress({
-            ...createConversionProgress.failed({ fileId, error: errorMsg }),
-            onProgress,
-        });
-        return {
-            fileId,
-            success: false,
-            error: errorMsg,
-        };
+        void logDebug('Video conversion failed', { fileId, error: errorMsg });
+        progress.failed(errorMsg);
+        return { fileId, success: false, error: errorMsg };
     }
 
-    const sourceFileName = basename(sourcePath);
-    const fileNameWithoutExt = sourceFileName.replace(/\.[^/.]+$/, '');
-    const outputFileName = `${fileNameWithoutExt}.${targetFormat}`;
+    const suggestedFileName = generateSuggestedFileName(sourcePath, targetFormat);
 
-    reportProgress({
-        ...createConversionProgress.completed({
-            fileId,
-            tempPath: result.outputPath,
-            suggestedFileName: outputFileName,
-            fileSize: result.fileSize,
-        }),
-        onProgress,
+    progress.complete({
+        tempPath: result.outputPath,
+        suggestedFileName,
+        fileSize: result.fileSize,
     });
 
     return {
         fileId,
         success: true,
-        suggestedFileName: outputFileName,
+        suggestedFileName,
         fileSize: result.fileSize,
         tempPath: result.outputPath,
         message: `Converted to ${targetFormat.toUpperCase()}`,
