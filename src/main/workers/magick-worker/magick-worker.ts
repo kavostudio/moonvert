@@ -1,7 +1,7 @@
 import { parentPort } from 'node:worker_threads';
 import { ImageMagick, initializeImageMagick, MagickFormat } from '@imagemagick/magick-wasm';
 import { readFileSync } from 'node:fs';
-import { MagickWorkerConversionRequest, MagickWorkerConversionResponse } from './magick-worker.types';
+import type { MagickWorkerConversionRequest, MagickWorkerConversionResponse } from './magick-worker.types';
 
 let initialized = false;
 

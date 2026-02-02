@@ -4,6 +4,7 @@ import {
     AllowedConversionOptions,
     type ConvertableFileFormat,
     isConvertableAudioFormat,
+    isConvertableStructuredFormat,
     isConvertableDocumentFormat,
     isConvertableEbookFormat,
     isConvertableGeoFormat,
@@ -11,7 +12,7 @@ import {
     isConvertableVideoFormat,
 } from 'shared/config/converter-config';
 
-export type FileGroup = 'images' | 'documents' | 'books' | 'geospatial' | 'videos' | 'audio';
+export type FileGroup = 'images' | 'documents' | 'books' | 'geospatial' | 'videos' | 'audio' | 'structured';
 
 const groupValidators: Record<FileGroup, (format: FileFormat) => boolean> = {
     images: isConvertableImageFormat,
@@ -20,6 +21,7 @@ const groupValidators: Record<FileGroup, (format: FileFormat) => boolean> = {
     geospatial: isConvertableGeoFormat,
     videos: isConvertableVideoFormat,
     audio: isConvertableAudioFormat,
+    structured: isConvertableStructuredFormat,
 };
 
 export function groupFilesByType(files: FileWithMetadata[]): Record<FileGroup, FileWithMetadata[]> {
@@ -30,6 +32,7 @@ export function groupFilesByType(files: FileWithMetadata[]): Record<FileGroup, F
         geospatial: [],
         videos: [],
         audio: [],
+        structured: [],
     };
 
     for (const file of files) {
@@ -52,6 +55,7 @@ export function getGroupDisplayName(group: FileGroup): string {
         geospatial: 'Geospatial',
         videos: 'Videos',
         audio: 'Audio',
+        structured: 'Structured Data',
     };
     return names[group];
 }
@@ -69,6 +73,7 @@ export function getAllFormatsForGroup(group: FileGroup): FileFormat[] {
         geospatial: [],
         videos: [],
         audio: [],
+        structured: [],
     };
 
     for (const [sourceFormat, targets] of Object.entries(AllowedConversionOptions)) {

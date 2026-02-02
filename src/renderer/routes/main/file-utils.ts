@@ -1,5 +1,5 @@
 import type { DocumentFileFormat, FileFormat } from 'shared/types/conversion.types';
-import { AUDIO_FORMATS, DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from 'shared/config/converter-config';
+import { AUDIO_FORMATS, STRUCTURED_FORMATS, DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from 'shared/config/converter-config';
 import type { FileWithMetadata } from './model';
 
 export type FileInput = {
@@ -10,7 +10,7 @@ export type FileInput = {
     bundleFiles?: string[];
 };
 
-function detectFormatAndCheckAcceptance(fileName: string): FileFormat | null {
+export function detectFormatAndCheckAcceptance(fileName: string): FileFormat | null {
     const ext = fileName.split('.').pop()?.toLowerCase();
     if (!ext) return null;
 
@@ -35,6 +35,10 @@ function detectFormatAndCheckAcceptance(fileName: string): FileFormat | null {
     }
 
     if (AUDIO_FORMATS.includes(ext as (typeof AUDIO_FORMATS)[number])) {
+        return ext as FileFormat;
+    }
+
+    if (STRUCTURED_FORMATS.includes(ext as (typeof STRUCTURED_FORMATS)[number])) {
         return ext as FileFormat;
     }
 

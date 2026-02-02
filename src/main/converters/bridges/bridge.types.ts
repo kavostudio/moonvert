@@ -1,4 +1,4 @@
-import { ConversionProgress, FileFormat } from 'shared/types/conversion.types';
+import type { ConversionProgress, FileFormat } from 'shared/types/conversion.types';
 
 export type BridgeConversionOptions<SourceFormat extends FileFormat, TargetFormat extends FileFormat, AdditionalOptions extends object = {}> = {
     sourcePath: string;

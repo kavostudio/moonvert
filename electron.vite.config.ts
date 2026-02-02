@@ -27,6 +27,7 @@ export default defineConfig({
                 input: {
                     index: resolve('src/main/index.ts'),
                     'workers/magick-worker': resolve('src/main/workers/magick-worker/magick-worker.ts'),
+                    'workers/structured-worker': resolve('src/main/workers/structured-worker/structured-worker.ts'),
                 },
 
                 output: {

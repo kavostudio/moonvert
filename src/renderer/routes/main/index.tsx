@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 
 import { HomeScreen } from './home';
 import { ConfigurationScreen } from './configuration';

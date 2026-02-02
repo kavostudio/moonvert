@@ -1,13 +1,9 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { toast } from 'sonner';
 import {
-    DOCUMENT_FORMATS,
-    EBOOK_FORMATS,
-    GEO_FORMATS,
-    IMAGE_FORMATS,
-    VIDEO_FORMATS,
     isAudioTargetFormat,
+    isStructuredTargetFormat,
     isConvertableAudioFormat,
+    isConvertableStructuredFormat,
     isConvertableDocumentFormat,
     isConvertableEbookFormat,
     isConvertableGeoFormat,
@@ -20,25 +16,20 @@ import {
     isVideoTargetFormat,
 } from 'shared/config/converter-config';
 import type {
-    AudioConversionRequest,
     AudioFileFormat,
     ConversionProgress,
     ConversionRequest,
-    ConversionResult,
-    DocumentConversionRequest,
     DocumentFileFormat,
     EbookFileFormat,
     FileFormat,
-    GeoConversionRequest,
     GeoFileFormat,
-    ImageConversionRequest,
     ImageFileFormat,
-    VideoConversionRequest,
     VideoFileFormat,
 } from 'shared/types/conversion.types';
-import type { SelectedFile } from 'shared/ipc/ipc-config';
-import { getScreenDimensions, Screens, type ScreenType } from './utils';
+import { toast } from 'sonner';
 import { canConvertFileToFormat } from './configuration/helpers';
+import { toFileWithMetadata } from './file-utils';
+import { getScreenDimensions, Screens, type ScreenType } from './utils';
 
 export type FileState = 'idle' | 'ready' | 'converting' | 'completed' | 'failed';
 
@@ -108,56 +99,6 @@ type AppState = {
     files: FileWithMetadata[];
 };
 
-function detectFormatAndCheckAcceptance(fileName: string): FileFormat | null {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    if (!ext) return null;
-
-    if (IMAGE_FORMATS.includes(ext as ImageFileFormat)) {
-        return ext as FileFormat;
-    }
-
-    if (GEO_FORMATS.includes(ext as GeoFileFormat)) {
-        return ext as FileFormat;
-    }
-
-    if (DOCUMENT_FORMATS.includes(ext as DocumentFileFormat)) {
-        return ext as DocumentFileFormat;
-    }
-
-    if (EBOOK_FORMATS.includes(ext as EbookFileFormat)) {
-        return ext as FileFormat;
-    }
-
-    if (VIDEO_FORMATS.includes(ext as VideoFileFormat)) {
-        return ext as FileFormat;
-    }
-
-    return null;
-}
-
-function generateFileId(): string {
-    return `file_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function toFileWithMetadata(file: SelectedFile): FileWithMetadata | null {
-    const fileFormat = detectFormatAndCheckAcceptance(file.name);
-
-    if (!fileFormat) {
-        return null;
-    }
-
-    return {
-        id: generateFileId(),
-        name: file.name,
-        size: file.size,
-        path: file.path,
-        isBundle: file.isBundle,
-        bundleFiles: file.bundleFiles,
-        state: 'idle',
-        format: fileFormat,
-    } as FileWithMetadata;
-}
-
 const mounted = createEvent<boolean>();
 
 const navigateTo = createEvent<ScreenType>();
@@ -179,11 +120,6 @@ const updateFileProgress = createEvent<{
     progress: ConversionProgress;
 }>();
 
-const updateFileResult = createEvent<{
-    fileId: string;
-    result: ConversionResult;
-}>();
-
 const updateFileSavedPath = createEvent<{
     fileId: string;
     savedPath: string;
@@ -198,7 +134,7 @@ const cancelAllConversionsFx = createEffect(async () => {
     await window.App.conversion.cancelAllConversions();
 });
 
-const startConversionFx = createEffect(async () => {
+const convertFx = createEffect(async () => {
     const state = $appState.getState();
 
     const filesToConvert = state.files.filter((f) => f.state !== 'idle' && f.path);
@@ -207,65 +143,45 @@ const startConversionFx = createEffect(async () => {
         throw new Error('No files ready for conversion');
     }
 
-    const conversions: ConversionRequest[] = filesToConvert
-        .map((file) => {
-            const baseRequest = {
-                fileId: file.id,
-                sourcePath: file.path!,
-            };
-
-            if (file.state === 'idle') {
+    const conversions = filesToConvert
+        .map((file): ConversionRequest | null => {
+            if (file.state === 'idle' || !file.targetFormat || !file.path) {
                 return null;
             }
 
-            if (isConvertableImageFormat(file.format) && isImageTargetFormat(file.targetFormat!)) {
-                return {
-                    ...baseRequest,
-                    sourceFormat: file.format,
-                    targetFormat: file.targetFormat,
-                } as ImageConversionRequest;
-            }
-
-            if (isConvertableGeoFormat(file.format) && isGeoTargetFormat(file.targetFormat!)) {
-                return {
-                    ...baseRequest,
-                    sourceFormat: file.format,
-                    targetFormat: file.targetFormat,
-                } as GeoConversionRequest;
-            }
-
-            if (isConvertableVideoFormat(file.format) && isVideoTargetFormat(file.targetFormat!)) {
-                return {
-                    ...baseRequest,
-                    sourceFormat: file.format,
-                    targetFormat: file.targetFormat,
-                } as VideoConversionRequest;
-            }
-
-            if (isConvertableAudioFormat(file.format) && isAudioTargetFormat(file.targetFormat!)) {
-                return {
-                    ...baseRequest,
-                    sourceFormat: file.format,
-                    targetFormat: file.targetFormat,
-                } as AudioConversionRequest;
-            }
+            const baseRequest = {
+                fileId: file.id,
+                sourcePath: file.path,
+            };
 
             if (
-                (isConvertableDocumentFormat(file.format) || isConvertableEbookFormat(file.format)) &&
-                (isDocumentTargetFormat(file.targetFormat!) || isEbookTargetFormat(file.targetFormat!))
+                (isConvertableImageFormat(file.format) && isImageTargetFormat(file.targetFormat)) ||
+                (isConvertableGeoFormat(file.format) && isGeoTargetFormat(file.targetFormat)) ||
+                (isConvertableVideoFormat(file.format) && isVideoTargetFormat(file.targetFormat)) ||
+                (isConvertableAudioFormat(file.format) && isAudioTargetFormat(file.targetFormat)) ||
+                (isConvertableStructuredFormat(file.format) && isStructuredTargetFormat(file.targetFormat)) ||
+                ((isConvertableDocumentFormat(file.format) || isConvertableEbookFormat(file.format)) &&
+                    (isDocumentTargetFormat(file.targetFormat) || isEbookTargetFormat(file.targetFormat)))
             ) {
                 return {
                     ...baseRequest,
-                    sourceFormat: file.format as DocumentFileFormat | EbookFileFormat,
-                    targetFormat: file.targetFormat as DocumentFileFormat | EbookFileFormat,
-                } as DocumentConversionRequest;
+                    sourceFormat: file.format,
+                    targetFormat: file.targetFormat,
+                } as ConversionRequest;
             }
 
             return null;
         })
         .filter((conversion): conversion is ConversionRequest => conversion !== null);
 
-    window.App.conversion.convertBatch({ conversions });
+    return await window.App.conversion.convertBatch({ conversions });
+});
+
+sample({
+    clock: convertFx.doneData,
+    fn: (result) => {
+        return result;
+    },
 });
 
 const $appState = createStore<AppState>({
@@ -327,57 +243,22 @@ sample({
                 const targetFormat = updateMap.get(file.id);
                 if (!targetFormat) return file;
 
-                if (isConvertableImageFormat(file.format) && isImageTargetFormat(targetFormat)) {
-                    return {
-                        ...file,
-                        format: file.format as ImageFileFormat,
-                        targetFormat: targetFormat as ImageFileFormat,
-                        state: 'ready',
-                        convertible: canConvertFileToFormat(file, targetFormat),
-                    } satisfies FileWithMetadata;
-                }
-
-                if (isConvertableGeoFormat(file.format) && isGeoTargetFormat(targetFormat)) {
-                    return {
-                        ...file,
-                        format: file.format as GeoFileFormat,
-                        targetFormat: targetFormat as GeoFileFormat,
-                        state: 'ready',
-                        convertible: canConvertFileToFormat(file, targetFormat),
-                    } satisfies FileWithMetadata;
-                }
-
                 if (
-                    (isConvertableDocumentFormat(file.format) || isConvertableEbookFormat(file.format)) &&
-                    (isDocumentTargetFormat(targetFormat) || isEbookTargetFormat(targetFormat))
+                    (isConvertableImageFormat(file.format) && isImageTargetFormat(targetFormat)) ||
+                    (isConvertableGeoFormat(file.format) && isGeoTargetFormat(targetFormat)) ||
+                    ((isConvertableDocumentFormat(file.format) || isConvertableEbookFormat(file.format)) &&
+                        (isDocumentTargetFormat(targetFormat) || isEbookTargetFormat(targetFormat))) ||
+                    (isConvertableVideoFormat(file.format) && isVideoTargetFormat(targetFormat)) ||
+                    (isConvertableAudioFormat(file.format) && isAudioTargetFormat(targetFormat)) ||
+                    (isConvertableStructuredFormat(file.format) && isStructuredTargetFormat(targetFormat))
                 ) {
                     return {
                         ...file,
-                        format: file.format as DocumentFileFormat | EbookFileFormat,
-                        targetFormat: targetFormat as DocumentFileFormat | EbookFileFormat,
+                        format: file.format,
+                        targetFormat: targetFormat,
                         state: 'ready',
                         convertible: canConvertFileToFormat(file, targetFormat),
-                    } satisfies FileWithMetadata;
-                }
-
-                if (isConvertableVideoFormat(file.format) && isVideoTargetFormat(targetFormat)) {
-                    return {
-                        ...file,
-                        format: file.format as VideoFileFormat,
-                        targetFormat: targetFormat as VideoFileFormat,
-                        state: 'ready',
-                        convertible: canConvertFileToFormat(file, targetFormat),
-                    } satisfies FileWithMetadata;
-                }
-
-                if (isConvertableAudioFormat(file.format) && isAudioTargetFormat(targetFormat)) {
-                    return {
-                        ...file,
-                        format: file.format as AudioFileFormat,
-                        targetFormat: targetFormat as AudioFileFormat,
-                        state: 'ready',
-                        convertible: canConvertFileToFormat(file, targetFormat),
-                    } satisfies FileWithMetadata;
+                    } as FileWithMetadata;
                 }
 
                 return file;
@@ -426,8 +307,7 @@ sample({
         return {
             ...state,
             files: state.files.map((file) => {
-                if (file.state === 'idle') return file;
-                if (file.id !== fileId) return file;
+                if (file.state === 'idle' || file.id !== fileId) return file;
 
                 if (progress.status === 'processing') {
                     return {
@@ -442,7 +322,7 @@ sample({
                         ...file,
                         state: 'completed',
                         suggestedFileName: progress.suggestedFileName,
-                        progress: 100 as const,
+                        progress: progress.progress,
                         resultPath: progress.tempPath,
                         convertedSize: progress.fileSize,
                     } satisfies FileWithMetadata;
@@ -497,7 +377,7 @@ sample({
 
 sample({
     clock: startConversion,
-    target: startConversionFx,
+    target: convertFx,
 });
 
 sample({
@@ -507,7 +387,6 @@ sample({
 
 if (typeof window !== 'undefined' && window.App?.conversion) {
     window.App.conversion.onBatchProgress((progress) => {
-        console.log('Batch conversion progress:', progress);
         if (progress.current) {
             updateFileProgress({
                 fileId: progress.current.fileId,
@@ -538,11 +417,9 @@ sample({
     clock: $allFilesProcessed,
     filter: (_, isProcessed) => isProcessed === true,
     fn: (state) => {
-        const completed = state.files.filter((f) => f.state === 'completed').length;
         const failed = state.files.filter((f) => f.state === 'failed').length;
 
         const title = failed > 0 ? 'Conversion Finished' : 'Conversion Complete';
-        // const description = failed > 0 ? `${completed} converted, ${failed} failed` : `${completed} file${completed !== 1 ? 's' : ''} ready to save`;
 
         if (failed > 0) {
             toast.error(title, {});
@@ -574,7 +451,6 @@ export const $$main = {
     startConversion,
     cancelAllConversions,
     updateFileProgress,
-    updateFileResult,
     updateFileSavedPath,
 
     setFileSaving,

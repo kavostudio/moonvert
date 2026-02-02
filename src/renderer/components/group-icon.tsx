@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { AudioLines, Book, FileText, Image, type LucideIcon, Map as MapIcon, Video } from 'lucide-react';
+import { AudioLines, Book, Braces, FileText, Image, type LucideIcon, Map as MapIcon, Video } from 'lucide-react';
 import { $$theme } from 'renderer/entities/theme/model';
 import type { FileGroup } from 'renderer/routes/main/configuration/helpers';
 
@@ -14,6 +14,7 @@ const icons = {
     books: Book,
     videos: Video,
     audio: AudioLines,
+    structured: Braces,
 } satisfies Record<FileGroup, LucideIcon>;
 
 export function GroupIcon({ group }: GroupIconProps) {

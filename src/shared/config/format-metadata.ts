@@ -1,6 +1,6 @@
 import type { FileFormat } from '../types/conversion.types';
 
-type FormatCategory = 'Raster Image' | 'Vector Geospatial' | 'Document' | 'Ebook' | 'Video' | 'Audio';
+type FormatCategory = 'Raster Image' | 'Vector Geospatial' | 'Document' | 'Ebook' | 'Video' | 'Audio' | 'Configuration';
 
 const formatCategories: Record<string, FormatCategory> = {
     RasterImage: 'Raster Image',
@@ -9,6 +9,7 @@ const formatCategories: Record<string, FormatCategory> = {
     Ebook: 'Ebook',
     Video: 'Video',
     Audio: 'Audio',
+    Configuration: 'Configuration',
 };
 
 export type FormatMetadata = {
@@ -382,6 +383,38 @@ export const FORMAT_METADATA: Record<FileFormat, FormatMetadata> = {
         extension: '.wv',
         description: 'WavPack - Hybrid lossless audio compression',
         category: formatCategories.Audio,
+    },
+
+    // Configuration formats
+    json: {
+        name: 'JSON',
+        extension: '.json',
+        description: 'JavaScript Object Notation - Human-readable data format',
+        category: formatCategories.Configuration,
+    },
+    yaml: {
+        name: 'YAML',
+        extension: '.yaml',
+        description: "YAML Ain't Markup Language - Human-friendly data serialization",
+        category: formatCategories.Configuration,
+    },
+    yml: {
+        name: 'YML',
+        extension: '.yml',
+        description: "YAML Ain't Markup Language - Human-friendly data serialization",
+        category: formatCategories.Configuration,
+    },
+    plist: {
+        name: 'Property List',
+        extension: '.plist',
+        description: 'Apple Property List - macOS/iOS configuration format',
+        category: formatCategories.Configuration,
+    },
+    toml: {
+        name: 'TOML',
+        extension: '.toml',
+        description: "Tom's Obvious Minimal Language - Simple configuration format",
+        category: formatCategories.Configuration,
     },
 };
 

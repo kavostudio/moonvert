@@ -24,7 +24,11 @@ export const AudioFileFormatZod = z.enum(['mp3', 'wav', 'flac', 'aac', 'm4a', 'o
 
 export type AudioFileFormat = z.infer<typeof AudioFileFormatZod>;
 
-export type FileFormat = GeoFileFormat | ImageFileFormat | DocumentFileFormat | EbookFileFormat | VideoFileFormat | AudioFileFormat;
+export const StructuredFileFormatZod = z.enum(['json', 'yaml', 'yml', 'plist', 'toml']);
+
+export type StructuredFileFormat = z.infer<typeof StructuredFileFormatZod>;
+
+export type FileFormat = GeoFileFormat | ImageFileFormat | DocumentFileFormat | EbookFileFormat | VideoFileFormat | AudioFileFormat | StructuredFileFormat;
 
 export type FileInfo = {
     id: string;
@@ -87,7 +91,15 @@ export type AudioConversionRequest = GenericConversionRequest<
     AudioFileFormat
 >;
 
-export type ConversionRequest = ImageConversionRequest | GeoConversionRequest | DocumentConversionRequest | VideoConversionRequest | AudioConversionRequest;
+export type StructuredConversionRequest = GenericConversionRequest<{}, StructuredFileFormat>;
+
+export type ConversionRequest =
+    | ImageConversionRequest
+    | GeoConversionRequest
+    | DocumentConversionRequest
+    | VideoConversionRequest
+    | AudioConversionRequest
+    | StructuredConversionRequest;
 
 type BaseConversionProgress = {
     fileId: string;

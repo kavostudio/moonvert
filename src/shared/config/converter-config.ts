@@ -1,11 +1,13 @@
 import {
     AudioFileFormatZod,
+    StructuredFileFormatZod,
     DocumentFileFormatZod,
     EbookFileFormatZod,
     GeoFileFormatZod,
     ImageFileFormatZod,
     VideoFileFormatZod,
     type AudioFileFormat,
+    type StructuredFileFormat,
     type DocumentFileFormat,
     type EbookFileFormat,
     type FileFormat,
@@ -90,6 +92,14 @@ export const AudioConversionOptions = {
     wv: ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'aiff', 'opus'],
 } as const satisfies Partial<Record<AudioFileFormat, AudioFileFormat[]>>;
 
+export const StructuredConversionOptions = {
+    json: ['yaml', 'yml', 'plist', 'toml'],
+    yaml: ['json', 'plist', 'toml'],
+    yml: ['json', 'plist', 'toml'],
+    plist: ['json', 'yaml', 'toml'],
+    toml: ['json', 'yaml', 'plist'],
+} as const satisfies Partial<Record<StructuredFileFormat, StructuredFileFormat[]>>;
+
 export const AllowedConversionOptions = {
     ...GeoConversionOptions,
     ...ImageConversionOptions,
@@ -97,6 +107,7 @@ export const AllowedConversionOptions = {
     ...EbookConversionOptions,
     ...VideoConversionOptions,
     ...AudioConversionOptions,
+    ...StructuredConversionOptions,
 };
 
 export const IMAGE_FORMATS = Object.keys(ImageConversionOptions) as ImageFileFormat[];
@@ -110,6 +121,8 @@ export const EBOOK_FORMATS = Object.keys(EbookConversionOptions) as EbookFileFor
 export const VIDEO_FORMATS = Object.keys(VideoConversionOptions) as VideoFileFormat[];
 
 export const AUDIO_FORMATS = Object.keys(AudioConversionOptions) as AudioFileFormat[];
+
+export const STRUCTURED_FORMATS = Object.keys(StructuredConversionOptions) as StructuredFileFormat[];
 
 export function isConvertableImageFormat(format: FileFormat): format is ImageFileFormat {
     return IMAGE_FORMATS.includes(format as ImageFileFormat);
@@ -157,6 +170,14 @@ export function isConvertableAudioFormat(format: FileFormat): format is AudioFil
 
 export function isAudioTargetFormat(format: FileFormat): format is AudioFileFormat {
     return AudioFileFormatZod.safeParse(format).success;
+}
+
+export function isConvertableStructuredFormat(format: FileFormat): format is StructuredFileFormat {
+    return STRUCTURED_FORMATS.includes(format as StructuredFileFormat);
+}
+
+export function isStructuredTargetFormat(format: FileFormat): format is StructuredFileFormat {
+    return StructuredFileFormatZod.safeParse(format).success;
 }
 
 export type ConvertableFileFormat = keyof typeof AllowedConversionOptions;

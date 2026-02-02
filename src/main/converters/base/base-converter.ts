@@ -1,7 +1,6 @@
 import { randomBytes } from 'crypto';
 import { app } from 'electron';
-import { tmpdir } from 'os';
-import { join, basename } from 'path';
+import { basename, join } from 'path';
 import { config } from 'shared/config/app-config';
 import type {
     CompletedConversionProgress,

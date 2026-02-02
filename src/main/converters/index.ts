@@ -1,7 +1,9 @@
 import {
     AllowedConversionOptions,
     isAudioTargetFormat,
+    isStructuredTargetFormat,
     isConvertableAudioFormat,
+    isConvertableStructuredFormat,
     isConvertableDocumentFormat,
     isConvertableEbookFormat,
     isConvertableGeoFormat,
@@ -13,6 +15,7 @@ import {
 } from 'shared/config/converter-config';
 import type {
     AudioConversionRequest,
+    StructuredConversionRequest,
     ConversionRequest,
     DocumentConversionRequest,
     FileFormat,
@@ -22,6 +25,7 @@ import type {
 } from 'shared/types/conversion.types';
 import type { ConverterFunction } from './base/base-converter';
 import { $$audioConverter } from './audio/audio-converter';
+import { $$structuredConverter } from './structured/structured-converter';
 import { $$documentConverter } from './document/document-converter';
 import { $$geoConverter } from './geo/geo-converter';
 import { $$imageConverter } from './image/image-converter';
@@ -63,6 +67,13 @@ export function getConverter(sourceFormat: FileFormat, targetFormat: FileFormat)
     if (isConvertableAudioFormat(sourceFormat) && isAudioTargetFormat(targetFormat)) {
         return async (request, onProgress, abortSignal) => {
             const result = await $$audioConverter.convert(request as AudioConversionRequest, onProgress, abortSignal);
+            return result;
+        };
+    }
+
+    if (isConvertableStructuredFormat(sourceFormat) && isStructuredTargetFormat(targetFormat)) {
+        return async (request, onProgress, abortSignal) => {
+            const result = await $$structuredConverter.convert(request as StructuredConversionRequest, onProgress, abortSignal);
             return result;
         };
     }

@@ -30,6 +30,7 @@ const $configState = createStore<ConfigurationState>({
         books: null,
         videos: null,
         audio: null,
+        structured: null,
     },
 }).reset(reset);
 
@@ -72,6 +73,7 @@ sample({
                 books: null,
                 videos: null,
                 audio: null,
+                structured: null,
             },
         };
     },
