@@ -114,7 +114,7 @@ export function LicenseDialog() {
                     </Button>
                 </DialogTrigger>
             )}
-            <DialogContent className="w-90" showCloseButton={!isFreeTrialExpired && !isRevoked}>
+            <DialogContent className="w-180" showCloseButton={!isFreeTrialExpired && !isRevoked}>
                 <div className="flex flex-col items-center gap-4 py-2">
                     <div className="bg-secondary-foreground flex size-12 items-center justify-center rounded-[12px] border p-3 dark:border-none">
                         <Sparkles className="text-popover fill-popover size-6 stroke-0" />
@@ -138,7 +138,7 @@ export function LicenseDialog() {
                     <div className="flex w-full gap-2">
                         <Input
                             type="text"
-                            placeholder="XXXX-XXXX-XXXX-XXXX"
+                            placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                             value={licenseKey}
                             onChange={(e) => {
                                 setLicenseKey(e.target.value);
