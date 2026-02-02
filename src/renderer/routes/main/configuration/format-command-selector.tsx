@@ -43,7 +43,7 @@ export function FormatCommandSelector({ targetFormat, availableTargets, onTarget
             </Button>
 
             <Dialog onOpenChange={setOpen} open={open}>
-                <DialogContent showCloseButton={false} className="flex h-[calc(100vh-4rem)] max-w-[calc(100vw-4rem)] flex-col gap-0 p-0">
+                <DialogContent showCloseButton={true} className="flex h-[calc(100vh-4rem)] max-w-[calc(100vw-4rem)] flex-col gap-0 p-0">
                     <Command className="h-full rounded-lg">
                         <CommandInput placeholder="Search formats..." />
                         <CommandList className="flex-1 overflow-y-scroll">

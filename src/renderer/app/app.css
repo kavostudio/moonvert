@@ -11,10 +11,14 @@
     --popover: hsla(0, 0%, 11%, 1);
     --popover-foreground: hsla(0, 0%, 100%, 1);
 
+    --decorative: hsla(283, 20%, 68%, 1);
+
     --primary: hsla(240, 70%, 68%, 1);
 
     --secondary: hsla(0, 0%, 100%, 0.9);
     --secondary-foreground: hsla(0, 0%, 100%, 1);
+
+    --terciary: hsla(240, 70%, 95%, 1);
 
     --muted: hsla(0, 0%, 50%, 1);
     --muted-softer: hsla(0, 0%, 67%, 1);
@@ -48,10 +52,13 @@
     --popover: hsla(0, 0%, 100%, 1);
     --popover-foreground: hsla(0, 0%, 100%, 1);
 
-    --primary: hsla(240, 33%, 50%, 1);
+    --decorative: hsla(244, 21%, 85%, 1);
+
+    --primary: hsla(240, 70%, 68%, 1);
 
     --secondary: hsla(240, 29%, 27%, 1);
     --secondary-foreground: hsla(0, 0%, 19%, 1);
+    --terciary: hsla(240, 29%, 27%, 1);
 
     --muted: hsla(0, 0%, 60%, 1);
     --muted-softer: hsla(0, 0%, 52%, 1);
@@ -84,8 +91,10 @@
     --color-foreground: var(--foreground);
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
+    --color-decorative: var(--decorative);
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
+    --color-terciary: var(--terciary);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-muted: var(--muted);
     --color-muted-softer: var(--muted-softer);

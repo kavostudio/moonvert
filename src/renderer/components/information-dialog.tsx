@@ -146,7 +146,7 @@ export function InformationDialog({ className }: InformationDialogProps) {
                     <Settings className="size-5 stroke-[1.8px]" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max- h-full max-h-[374px] w-full justify-between gap-0 p-0" showCloseButton={false}>
+            <DialogContent className="h-full max-h-[374px] w-full justify-between gap-0 p-0" showCloseButton={true}>
                 <div className="flex h-full w-full flex-col gap-5 p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-full w-auto items-center justify-center rounded-2xl">
@@ -156,7 +156,7 @@ export function InformationDialog({ className }: InformationDialogProps) {
                             <DialogTitle className="text-popover">
                                 <Logo className="fill-popover-foreground" />
                             </DialogTitle>
-                            <DialogDescription className="text-muted-softer text-base leading-none">
+                            <DialogDescription className="text-decorative text-base leading-none">
                                 Version: {config.version.codename} {config.version.number}
                             </DialogDescription>
                         </div>
@@ -170,8 +170,8 @@ export function InformationDialog({ className }: InformationDialogProps) {
                                     await window.App.window.openDebugLog();
                                 }}
                                 type="button"
-                                variant={'default'}
-                                className="text-popover-foreground/80 w-fit brightness-90"
+                                variant={'terciary'}
+                                className="w-fit"
                             >
                                 Open debug log
                             </Button>
@@ -205,7 +205,7 @@ export function InformationDialog({ className }: InformationDialogProps) {
                             );
                         })}
                     </div>
-                    <p className="text-muted-softer text-sm">Powered by Kavo Studio</p>
+                    <p className="text-decorative text-sm font-medium">Powered by Kavo Studio</p>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

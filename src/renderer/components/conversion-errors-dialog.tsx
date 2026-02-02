@@ -22,7 +22,7 @@ export function ConversionErrorsDialog({ open, onOpenChange, failedFiles, totalP
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="h-full max-h-105 w-full justify-between gap-0 p-0" showCloseButton={false}>
+            <DialogContent className="h-full max-h-105 w-full justify-between gap-0 p-0" showCloseButton={true}>
                 <div className="flex w-full flex-1 flex-col gap-4 p-4">
                     <div className="flex flex-col items-start">
                         <DialogTitle className="text-popover-foreground text-lg font-bold">Conversion issues</DialogTitle>
@@ -61,7 +61,7 @@ export function ConversionErrorsDialog({ open, onOpenChange, failedFiles, totalP
                                 await window.App.window.openDebugLog();
                             }}
                             type="button"
-                            variant={'default'}
+                            variant={'terciary'}
                         >
                             Open debug log
                         </Button>

@@ -9,7 +9,7 @@ const badgeVariants = cva(
     {
         variants: {
             variant: {
-                default: 'bg-primary text-popover [a&]:hover:bg-primary/90',
+                default: 'bg-primary text-popover-foreground [a&]:hover:bg-primary/90',
                 success: 'bg-success text-popover-success',
                 destructive: 'bg-destructive text-popover-destructive',
             },
