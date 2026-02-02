@@ -16,7 +16,7 @@ import { registerWindowHandlers } from './ipc/window-handler';
 import { registerLicenseHandlers } from './ipc/license-handler';
 import { conversionManager } from './converters/conversion-manager';
 import { cleanupTempFiles } from './utils/cleanup';
-import { getDebugLogPath, isDebugEnabled, logDebug } from './utils/debug-logger';
+import { cleanupDebugLog, getDebugLogPath, isDebugEnabled, logDebug } from './utils/debug-logger';
 import { IPCEvents } from 'shared/ipc/ipc-config';
 import { processOpenWithFiles } from './ipc/utils';
 import { MainEnv } from './main-env';
@@ -43,13 +43,10 @@ function sendOpenWithFiles(window: BrowserWindow, files: { path: string; name: s
     };
 
     if (window.webContents.isLoading()) {
-        void logDebug('Window is loading, will send opened files after load');
         window.webContents.once('did-finish-load', () => {
-            void logDebug('Window finished loading, sending opened files now');
             window.webContents.send(IPCEvents.files.openedWith, payload);
         });
     } else {
-        void logDebug('Window is not loading, sending opened files immediately');
         window.webContents.send(IPCEvents.files.openedWith, payload);
     }
 
@@ -59,9 +56,7 @@ function sendOpenWithFiles(window: BrowserWindow, files: { path: string; name: s
 async function handleOpenWithFiles(filePaths: string[]) {
     if (filePaths.length === 0) return;
 
-    void logDebug('Handling open-with files', { count: filePaths.length });
-
-    const { files, rejected } = await processOpenWithFiles(filePaths);
+    const { files } = await processOpenWithFiles(filePaths);
 
     if (files.length === 0) {
         const dialogWindow = mainWindow ?? BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
@@ -73,20 +68,13 @@ async function handleOpenWithFiles(filePaths: string[]) {
                 detail: 'Moonvert supports images, geospatial files, documents, and ebooks.',
             });
         }
-        void logDebug('No supported files were opened');
         return;
     }
 
     if (mainWindow) {
-        void logDebug('Sending opened files to main window', { fileCount: files.length });
         sendOpenWithFiles(mainWindow, files);
     } else {
-        void logDebug('No main window to send opened files to, queuing paths', { fileCount: files.length });
         pendingOpenWithPaths = [...pendingOpenWithPaths, ...filePaths];
-    }
-
-    if (rejected.length > 0) {
-        void logDebug('Some opened files were rejected', { rejected });
     }
 }
 
@@ -94,11 +82,8 @@ if (process.platform === 'darwin') {
     app.on('open-file', (event, filePath) => {
         event.preventDefault();
 
-        void logDebug('App opened with file', { filePath });
-
         if (app.isReady()) {
             handleOpenWithFiles([filePath]);
-            void logDebug('Processed open-with file after app ready', { filePath });
         } else {
             pendingOpenWithPaths = [...pendingOpenWithPaths, filePath];
         }
@@ -111,6 +96,7 @@ makeAppWithSingleInstanceLock(async () => {
     (app as { isQuitting?: boolean }).isQuitting = false;
 
     if (isDebugEnabled()) {
+        void cleanupDebugLog();
         const logPath = getDebugLogPath();
         void logDebug('Debug logging enabled', {
             version: app.getVersion(),
@@ -145,16 +131,10 @@ makeAppWithSingleInstanceLock(async () => {
         autoUpdater.autoDownload = true;
         autoUpdater.autoInstallOnAppQuit = false;
 
-        autoUpdater.on('checking-for-update', () => {
-            void logDebug('AutoUpdater: checking for updates');
-        });
+        autoUpdater.on('checking-for-update', () => {});
 
         autoUpdater.on('update-available', (info) => {
             void logDebug('AutoUpdater: update available', { version: info.version });
-        });
-
-        autoUpdater.on('update-not-available', (info) => {
-            void logDebug('AutoUpdater: no update available', { version: info.version });
         });
 
         autoUpdater.on('error', (error) => {
@@ -224,13 +204,11 @@ makeAppWithSingleInstanceLock(async () => {
         // Abort all conversions when the window is reloaded in dev mode (Cmd+R, etc.)
         if (ENVIRONMENT.IS_DEV) {
             window.webContents.on('will-navigate', () => {
-                void logDebug('Window will navigate (reload), aborting all conversions');
                 conversionManager.abortAll('Window reloaded');
             });
 
             window.webContents.on('did-start-navigation', (_event, _url, isInPlace) => {
                 if (isInPlace) {
-                    void logDebug('Window did start in-place navigation (reload), aborting all conversions');
                     conversionManager.abortAll('Window reloaded');
                 }
             });
@@ -277,7 +255,6 @@ makeAppWithSingleInstanceLock(async () => {
         }
 
         if (pendingOpenWithPaths.length > 0 && mainWindow) {
-            void logDebug('Processing pending open-with files after activate', { count: pendingOpenWithPaths.length });
             const paths = pendingOpenWithPaths;
             pendingOpenWithPaths = [];
             handleOpenWithFiles(paths);
@@ -285,7 +262,6 @@ makeAppWithSingleInstanceLock(async () => {
     });
 
     if (pendingOpenWithPaths.length > 0) {
-        void logDebug('Processing pending open-with files after startup', { count: pendingOpenWithPaths.length });
         const paths = pendingOpenWithPaths;
         pendingOpenWithPaths = [];
         handleOpenWithFiles(paths);
