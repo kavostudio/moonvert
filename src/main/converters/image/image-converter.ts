@@ -1,10 +1,8 @@
-import { mkdir, stat } from 'fs/promises';
+import { stat } from 'fs/promises';
 import { logDebug } from 'main/utils/debug-logger';
-import { dirname } from 'path';
-import type { ConversionResult, ImageConversionOptions, ImageConversionRequest } from 'shared/types/conversion.types';
-import { type ConverterFunction, createConversionProgress, generateOutputPath, reportProgress } from '../base/base-converter';
-import { $$magickBridge } from '../bridges/magick-bridge';
-import { getAbortErrorMessage, withAbort } from 'main/utils/abort-utils';
+import type { ImageConversionOptions, ImageConversionRequest } from 'shared/types/conversion.types';
+import { type ConverterFunction, createProgressReporter, generateSuggestedFileName, prepareOutputPath } from '../base/base-converter';
+import { $$magickBridge } from '../bridges/worker-based/magick-bridge';
 
 const defaultOptions: ImageConversionOptions = {
     quality: 100,
@@ -12,136 +10,61 @@ const defaultOptions: ImageConversionOptions = {
     lossless: false,
 };
 
-const convertWithMagick: ConverterFunction<ImageConversionRequest> = async (request, onProgress, abortSignal) => {
-    const { fileId, sourcePath, sourceFormat, targetFormat, outputPath, imageOptions } = request;
+const convert: ConverterFunction<ImageConversionRequest> = async (request, onProgress, abortSignal) => {
+    const { fileId, sourcePath, sourceFormat, targetFormat, imageOptions } = request;
+    const progress = createProgressReporter(onProgress, fileId);
 
     if (abortSignal.aborted) {
-        throw new Error(getAbortErrorMessage(abortSignal));
+        const errorMsg = abortSignal.reason?.message ?? 'Conversion aborted';
+        progress.failed(errorMsg);
+        return { fileId, success: false, error: errorMsg };
     }
 
-    void logDebug('Image conversion (magick) starting', {
-        fileId,
-        sourcePath,
-        sourceFormat,
-        targetFormat,
-        outputPath: outputPath || undefined,
-        imageOptions: imageOptions || undefined,
-    });
+    void logDebug('Image conversion starting', { fileId, sourcePath, sourceFormat, targetFormat });
+
+    progress.processing(0, 'Starting image conversion...');
 
     const options = { ...defaultOptions, ...imageOptions };
+    const outputPath = await prepareOutputPath(sourcePath, targetFormat);
 
-    reportProgress({
-        ...createConversionProgress.processing({
-            fileId,
-            progress: 25,
-            message: 'Converting with ImageMagick',
-        }),
-        onProgress,
-    });
-
-    const finalOutputPath = outputPath || generateOutputPath(sourcePath, targetFormat);
-
-    const outputDir = dirname(finalOutputPath);
-    await withAbort(abortSignal, mkdir(outputDir, { recursive: true }));
-
-    reportProgress({
-        ...createConversionProgress.processing({
-            fileId,
-            progress: 50,
-            message: 'Processing with ImageMagick',
-        }),
-        onProgress,
-    });
-    await $$magickBridge.convert({
-        sourcePath,
-        targetPath: finalOutputPath,
-        sourceFormat,
-        targetFormat,
-        quality: options.quality,
-        onProgress,
-        fileId,
-        abortSignal,
-    });
-
-    reportProgress({
-        ...createConversionProgress.processing({
-            fileId,
-            progress: 75,
-            message: 'Finalizing conversion',
-        }),
-        onProgress,
-    });
-
-    const stats = await withAbort(abortSignal, stat(finalOutputPath));
-    const fileSize = stats.size;
-
-    const baseName =
-        sourcePath
-            .split('/')
-            .pop()
-            ?.replace(/\.[^/.]+$/, '') || 'image';
-    const suggestedFileName = `${baseName}.${targetFormat}`;
-
-    return {
-        fileId,
-        success: true,
-        suggestedFileName,
-        fileSize,
-        tempPath: finalOutputPath,
-        message: `Converted to ${targetFormat.toUpperCase()} via ImageMagick`,
-    };
-};
-
-const convert: ConverterFunction<ImageConversionRequest> = async (request, onProgress, abortSignal) => {
-    const { fileId, sourceFormat, targetFormat } = request;
+    progress.processing(25, 'Processing with ImageMagick...');
 
     try {
-        if (abortSignal.aborted) {
-            throw new Error(getAbortErrorMessage(abortSignal));
-        }
-        reportProgress({
-            ...createConversionProgress.processing({ fileId }),
-            onProgress,
-        });
-
-        const conversionResult: ConversionResult = await convertWithMagick(request, onProgress, abortSignal);
-
-        if (!conversionResult.success) {
-            const errorMsg = conversionResult.error || 'Conversion failed';
-            throw new Error(errorMsg);
-        }
-
-        reportProgress({
-            ...createConversionProgress.completed({
-                fileId,
-                suggestedFileName: conversionResult.suggestedFileName,
-                fileSize: conversionResult.fileSize,
-                tempPath: conversionResult.tempPath,
-            }),
-            onProgress,
-        });
-
-        return conversionResult;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-        void logDebug('Image conversion failed', {
-            fileId,
+        await $$magickBridge.convert({
+            sourcePath,
+            targetPath: outputPath,
             sourceFormat,
             targetFormat,
-            error: errorMessage,
+            quality: options.quality,
+            onProgress,
+            fileId,
+            abortSignal,
         });
 
-        reportProgress({
-            ...createConversionProgress.failed({ fileId, error: errorMessage }),
-            onProgress,
+        progress.processing(75, 'Finalizing conversion...');
+
+        const stats = await stat(outputPath);
+        const suggestedFileName = generateSuggestedFileName(sourcePath, targetFormat);
+
+        progress.complete({
+            tempPath: outputPath,
+            suggestedFileName,
+            fileSize: stats.size,
         });
 
         return {
             fileId,
-            success: false,
-            error: `Image conversion failed: ${errorMessage}`,
+            success: true,
+            suggestedFileName,
+            fileSize: stats.size,
+            tempPath: outputPath,
+            message: `Converted to ${targetFormat.toUpperCase()}`,
         };
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        void logDebug('Image conversion failed', { fileId, error: errorMsg });
+        progress.failed(errorMsg);
+        return { fileId, success: false, error: `Image conversion failed: ${errorMsg}` };
     }
 };
 
