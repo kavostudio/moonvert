@@ -1,4 +1,4 @@
-export const TRIAL_CONVERSION_LIMIT = 1;
+export const TRIAL_CONVERSION_LIMIT = 10;
 
 export type LicenseStatus = 'trial' | 'active' | 'revoked';
 
