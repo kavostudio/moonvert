@@ -43,30 +43,30 @@ export default {
         jobs: 3,
     },
 
-    dmg: {
-        sign: true,
-        title: 'Moonvert Installer',
-        icon: `${resources}/build/icons/icon.icns`,
-        iconSize: 80,
-        format: 'UDBZ',
-        contents: [
-            {
-                x: 130,
-                y: 220,
-                type: 'file',
-            },
-            {
-                x: 410,
-                y: 220,
-                type: 'link',
-                path: '/Applications',
-            },
-        ],
-        window: {
-            width: 540,
-            height: 380,
-        },
-    },
+    // dmg: {
+    //     sign: true,
+    //     title: 'Moonvert Installer',
+    //     icon: `${resources}/build/icons/icon.icns`,
+    //     iconSize: 80,
+    //     format: 'UDBZ',
+    //     contents: [
+    //         {
+    //             x: 130,
+    //             y: 220,
+    //             type: 'file',
+    //         },
+    //         {
+    //             x: 410,
+    //             y: 220,
+    //             type: 'link',
+    //             path: '/Applications',
+    //         },
+    //     ],
+    //     window: {
+    //         width: 540,
+    //         height: 380,
+    //     },
+    // },
 
     mac: {
         artifactName: `${name}-v\${version}-\${os}-\${arch}.\${ext}`,
