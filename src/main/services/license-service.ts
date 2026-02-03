@@ -17,7 +17,7 @@ import {
     ActivateLicenseResponseZod,
 } from 'shared/types/license.types';
 
-const REVALIDATION_INTERVAL_MS = 0 * 24 * 60 * 60 * 1000; // 1 day
+const REVALIDATION_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
 type LicenseStoreSchema = {
     conversionCount: number;
