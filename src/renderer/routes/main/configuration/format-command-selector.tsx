@@ -81,13 +81,13 @@ export function FormatCommandSelector({ targetFormat, availableTargets, onTarget
                         <p className="text-muted text-sm">
                             Missing a format?{' '}
                             <a
-                                href={config.links.github.issues}
+                                href={config.links.contact}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-popover font-bold hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    window.open(config.links.github.issues, '_blank');
+                                    window.open(config.links.contact, '_blank');
                                 }}
                                 tabIndex={-1}
                             >

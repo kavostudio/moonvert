@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 import { Copy, Globe, Headset, Scale, Settings } from 'lucide-react';
 import logoPng from 'renderer/assets/logo.png';
 import { Badge } from 'renderer/components/ui/badge';
@@ -136,11 +137,18 @@ type InformationDialogProps = {
 
 export function InformationDialog({ className }: InformationDialogProps) {
     const licenseState = useUnit($$license.$licenseState);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        return window.App.window.onOpenSettings(() => {
+            setOpen(true);
+        });
+    }, []);
 
     const licenseKey = licenseState?.status === 'active' || licenseState?.status === 'revoked' ? licenseState.licenseKey : undefined;
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button aria-label="Open information" className={cn('', className)} size="icon" variant="icon">
                     <Settings className="size-5 stroke-[1.8px]" />
@@ -205,7 +213,20 @@ export function InformationDialog({ className }: InformationDialogProps) {
                             );
                         })}
                     </div>
-                    <p className="text-decorative text-sm font-medium">Powered by Kavo Studio</p>
+
+                    <a
+                        href={config.links.kavoStudio}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            openExternalLink(config.links.kavoStudio);
+                        }}
+                        tabIndex={-1}
+                        className={cn('text-decorative hover:text-primary text-sm font-medium transition')}
+                    >
+                        <p>Powered by Kavo Studio</p>
+                    </a>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

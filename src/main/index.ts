@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, Notification } from 'electron';
 import electronUpdater from 'electron-updater';
 
 const { autoUpdater } = electronUpdater;
@@ -20,6 +20,7 @@ import { cleanupDebugLog, getDebugLogPath, isDebugEnabled, logDebug } from './ut
 import { IPCEvents } from 'shared/ipc/ipc-config';
 import { processOpenWithFiles } from './ipc/utils';
 import { MainEnv } from './main-env';
+import { setupApplicationMenu } from './menu';
 
 import windowStateKeeper from 'electron-window-state';
 
@@ -95,6 +96,11 @@ makeAppWithSingleInstanceLock(async () => {
 
     (app as { isQuitting?: boolean }).isQuitting = false;
 
+    if (process.platform === 'darwin') {
+        const hasUpdater = MainEnv.MOONVERT_UPDATE_URL && MainEnv.MOONVERT_UPDATE_SECRET && MainEnv.MOONVERT_AUTH_HEADER;
+        setupApplicationMenu(hasUpdater ? autoUpdater : undefined, () => mainWindow);
+    }
+
     if (isDebugEnabled()) {
         void cleanupDebugLog();
         const logPath = getDebugLogPath();
@@ -135,10 +141,23 @@ makeAppWithSingleInstanceLock(async () => {
 
         autoUpdater.on('update-available', (info) => {
             void logDebug('AutoUpdater: update available', { version: info.version });
+
+            if (Notification.isSupported()) {
+                new Notification({
+                    title: 'Update Available',
+                    body: `Moonvert ${info.version} is downloading in the background.`,
+                }).show();
+            } else if (app.dock) {
+                app.dock.bounce('informational');
+            }
         });
 
         autoUpdater.on('error', (error) => {
             void logDebug('AutoUpdater: error', { message: error.message });
+
+            if (mainWindow) {
+                mainWindow.setProgressBar(-1);
+            }
         });
 
         autoUpdater.on('download-progress', (progress) => {
@@ -148,10 +167,18 @@ makeAppWithSingleInstanceLock(async () => {
                 transferred: progress.transferred,
                 total: progress.total,
             });
+
+            if (mainWindow) {
+                mainWindow.setProgressBar(progress.percent / 100);
+            }
         });
 
         autoUpdater.on('update-downloaded', async (info) => {
             void logDebug('AutoUpdater: update downloaded', { version: info.version });
+
+            if (mainWindow) {
+                mainWindow.setProgressBar(-1);
+            }
 
             const dialogWindow = mainWindow ?? BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
             if (!dialogWindow) {

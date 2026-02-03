@@ -172,6 +172,7 @@ export type IPCEventMap = {
         timestamp: number;
     };
     'license:state-changed': LicenseState;
+    'settings:open-requested': void;
 };
 
 export type IPCChannel = keyof IPCChannelMap;
@@ -230,5 +231,8 @@ export const IPCEvents = {
     },
     license: {
         stateChanged: 'license:state-changed',
+    },
+    settings: {
+        openRequested: 'settings:open-requested',
     },
 } as const satisfies Record<string, Record<string, IPCEvent>>;
