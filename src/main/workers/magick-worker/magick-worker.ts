@@ -38,7 +38,7 @@ async function convertImage(request: MagickWorkerConversionRequest): Promise<Mag
         ImageMagick.read(inputBuffer, (image) => {
             image.quality = quality ?? 100;
             image.write(getFormatEnum(targetFormat), (data: Uint8Array) => {
-                outputBuffer = data;
+                outputBuffer = new Uint8Array(data);
             });
         });
 
