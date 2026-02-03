@@ -4,7 +4,7 @@ import type { Configuration } from 'electron-builder';
 import { author as _author, displayName, main, name, resources, version } from './package.json';
 
 import { getDevFolder } from './src/lib/electron-app/release/utils/path';
-import { DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, VIDEO_FORMATS } from './src/shared/config/converter-config';
+import { AUDIO_FORMATS, DOCUMENT_FORMATS, EBOOK_FORMATS, GEO_FORMATS, IMAGE_FORMATS, STRUCTURED_FORMATS, VIDEO_FORMATS } from './src/shared/config/converter-config';
 import 'dotenv/config';
 
 const authorSlug = _author.slug;
@@ -45,6 +45,7 @@ export default {
 
     dmg: {
         sign: true,
+        title: 'Moonvert Installer',
         icon: `${resources}/build/icons/icon.icns`,
         iconSize: 80,
         format: 'UDBZ',
@@ -104,6 +105,18 @@ export default {
             {
                 ext: [...VIDEO_FORMATS],
                 name: 'Video Files',
+                role: 'Editor',
+                icon: `${resources}/build/icons/icon.icns`,
+            },
+            {
+                ext: [...AUDIO_FORMATS],
+                name: 'Audio Files',
+                role: 'Editor',
+                icon: `${resources}/build/icons/icon.icns`,
+            },
+            {
+                ext: [...STRUCTURED_FORMATS],
+                name: 'Structured Data Files',
                 role: 'Editor',
                 icon: `${resources}/build/icons/icon.icns`,
             },
