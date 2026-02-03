@@ -18,13 +18,11 @@ export const config = {
 
     links: {
         github: {
-            issues: '',
-            releases: '',
-            repository: '',
+            repository: 'https://github.com/kavostudio/moonvert',
         },
         website: `https://moonvert.app/?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
-        donate: `https://moonvert.app/donate?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
         contact: `https://moonvert.app/contact?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
         credits: 'https://github.com/kavostudio/moonvert/blob/main/THIRD_PARTY_LICENSES.md',
+        kavoStudio: `https://kavostudio.dev/?utm_source=app&utm_medium=desktop&utm_campaign=moonvert&utm_content=${utmContent}`,
     },
 };
