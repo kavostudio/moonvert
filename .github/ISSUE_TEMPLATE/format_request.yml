@@ -1,0 +1,57 @@
+name: Format Request
+description: Request support for a new file format
+labels: ['format-request']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Want Moonvert to support a new file format? Let us know!
+
+    - type: input
+      id: format
+      attributes:
+          label: File Format
+          description: What format would you like supported?
+          placeholder: 'e.g., .heic, .avif, .webp'
+      validations:
+          required: true
+
+    - type: dropdown
+      id: type
+      attributes:
+          label: Format Type
+          options:
+              - Image
+              - Video
+              - Audio
+              - Document
+              - Geospatial
+              - Other
+      validations:
+          required: true
+
+    - type: dropdown
+      id: direction
+      attributes:
+          label: Conversion Direction
+          options:
+              - Convert FROM this format
+              - Convert TO this format
+              - Both directions
+      validations:
+          required: true
+
+    - type: textarea
+      id: use-case
+      attributes:
+          label: Use Case
+          description: How would you use this format in your workflow?
+          placeholder: I need this because...
+      validations:
+          required: true
+
+    - type: textarea
+      id: additional
+      attributes:
+          label: Additional Context
+          description: Any links to format specifications or other helpful info
