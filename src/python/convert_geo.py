@@ -10,6 +10,8 @@ import geopandas as gpd
 from pathlib import Path
 import traceback
 import fiona
+import tempfile
+import zipfile
 
 fiona.supported_drivers["KML"] = "rw"  # type: ignore
 
@@ -38,6 +40,7 @@ def emit_result(success, **kwargs):
 
 def convert_file(input_path, output_path, source_format, target_format):
     """Main conversion logic"""
+    temp_dir = None
     try:
         emit_progress("processing", 0, "Starting conversion")
 
@@ -46,8 +49,29 @@ def convert_file(input_path, output_path, source_format, target_format):
 
         emit_progress("processing", 5, f"Opening {source_format} file")
 
+        normalized_source_format = source_format.lower()
+        input_path_to_read = input_path
+
+        if normalized_source_format == "kmz":
+            emit_progress("processing", 7, "Extracting KMZ container")
+            temp_dir = tempfile.TemporaryDirectory()
+            with zipfile.ZipFile(input_path) as kmz_file:
+                kml_candidates = [
+                    name
+                    for name in kmz_file.namelist()
+                    if name.lower().endswith(".kml")
+                ]
+                if not kml_candidates:
+                    raise ValueError("KMZ archive does not contain a .kml file")
+                kml_name = kml_candidates[0]
+                kmz_file.extract(kml_name, temp_dir.name)
+
+            input_path_to_read = str(Path(temp_dir.name) / kml_name)
+            normalized_source_format = "kml"
+            emit_progress("processing", 9, f"Extracted KMZ to {Path(kml_name).name}")
+
         try:
-            file_size = Path(input_path).stat().st_size
+            file_size = Path(input_path_to_read).stat().st_size
             emit_progress(
                 "processing", 10, f"Reading {source_format} file ({file_size:,} bytes)"
             )
@@ -128,7 +152,8 @@ def convert_file(input_path, output_path, source_format, target_format):
             emit_progress("processing", 70, f"Encoding {feature_count:,} features")
             try:
                 gdf.to_file(final_output_path, driver=driver, engine=preferred_engine)
-            except Exception:
+            except Exception as e:
+                print(e)
                 gdf.to_file(final_output_path, driver=driver, engine="fiona")
             emit_progress("processing", 90, "Finalizing output file")
 
@@ -168,6 +193,9 @@ def convert_file(input_path, output_path, source_format, target_format):
         emit_result(False, error=error_msg, traceback=stack_trace)
 
         sys.exit(1)
+    finally:
+        if temp_dir is not None:
+            temp_dir.cleanup()
 
 
 if __name__ == "__main__":
