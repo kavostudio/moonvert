@@ -144,8 +144,9 @@ export function buildVideoArgs(sourcePath: string, targetPath: string, targetFor
     const preset = VIDEO_PRESETS[targetFormat];
     const useHardwareAccel = process.platform === 'darwin' && preset.hwAccel;
 
-    // Only map video and audio streams, ignore data/metadata streams
-    args.push('-map', '0:v', '-map', '0:a?');
+    // Only map first video stream and audio streams
+    // Using 0:v:0 excludes attached pictures (thumbnails) that cause encoding issues
+    args.push('-map', '0:v:0', '-map', '0:a?');
 
     if (useHardwareAccel && preset.hwAccel) {
         args.push('-c:v', preset.hwAccel.videoCodec, '-b:v', preset.hwAccel.bitrate);
