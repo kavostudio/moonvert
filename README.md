@@ -87,8 +87,28 @@ Moonvert is designed with privacy as a core principle:
 ### Prerequisites
 
 - Node.js 18+
-- pnpm 10+s
+- pnpm 10+
 - macOS (for building the Mac app)
+
+### Environment Setup
+
+1. Copy the example environment file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+2. Fill in the required values in `.env`:
+
+    | Variable                 | Description                                                                                                                |
+    | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+    | `BUILD_TYPE`             | Set to `"standard"` for full build or `"light"` for minimal build for quick testing, it does not include external binaries |
+    | `VITE_IS_OFFICIAL_BUILD` | Set to `false` for personal builds                                                                                         |
+
+    The remaining variables for personal builds, some are optional:
+    - Apple signing credentials (`APPLE_ID`, `APPLE_TEAM_ID`, etc.) — only needed for signed/notarized builds
+    - S3/AWS credentials — only needed for release publishing
+    - `VITE_MAIN_API_URL`, `VITE_JWT_PUBLIC_KEY` — only needed for license verification features
 
 ### Setup
 
@@ -96,6 +116,10 @@ Moonvert is designed with privacy as a core principle:
 # Clone the repository
 git clone https://github.com/kavostudio/moonvert.git
 cd moonvert
+
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with your values
 
 # Install dependencies
 pnpm install
