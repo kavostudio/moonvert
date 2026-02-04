@@ -31,7 +31,7 @@ Convert images, videos, audio, documents, books, geospatial data, and config fil
 
 - **⚡ Batch Conversion:** Drop multiple files and convert them all at once.
 
-- **📂 Finder Integration:** Right-click any file in Finder and convert it directly from the context menu.
+- **📂 Finder Integration:** Right-click any file in Finder and open it in Moonvert.
 
 - **🎨 Clean Interface:** Modern, clean macOS design.
 
