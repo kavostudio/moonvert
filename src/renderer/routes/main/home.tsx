@@ -263,13 +263,16 @@ export function HomeScreen() {
                                     : '0 0 0 3px rgba(255, 255, 255, 0.2)'
                                 : '0 0 0 0px rgba(0, 0, 0, 0)',
                         }}
-                        className="absolute top-0 left-0 flex items-center justify-center rounded-2xl"
+                        className="no-drag absolute top-0 left-0 flex items-center justify-center rounded-2xl"
                         style={{
                             width: '80px',
                             height: '80px',
                             backgroundColor: theme === 'dark' ? 'color-mix(in srgb, var(--muted-foreground) 70%, white)' : '#FFFFFF',
                         }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
+                        onClick={() => {
+                            handleUploadClick();
+                        }}
                     >
                         <motion.div
                             animate={{
