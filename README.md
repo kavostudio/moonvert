@@ -5,7 +5,7 @@
 
 # Moonvert
 
-A powerful local file converter for macOS.
+A pretty GUI over conversion engines - FFmpeg, Pandoc, ImageMagick, Geopandas.
 
 Convert images, videos, audio, documents, books, geospatial data, and config files — all locally on your device.
 
